@@ -59,6 +59,7 @@ Game.Init = function () {
 }
 
 Game.Loop = function () {
+    Game.animate();
     Game.ticks++;
     setTimeout(Game.Loop, 1000 / Game.fps);
 }
@@ -68,8 +69,16 @@ Game.Loop = function () {
 
 Game.currentFrame = {
     wasDrawn: false,
-    frameIdentifier: "",
+    name: "",
     data: []
+}
+
+Game.currentAnimation = {
+    name: "",
+    data: {},
+    currentFrame: 0,
+    isRunning: false,
+    isSet: false
 }
 
 Game.clearFrame = function () {
@@ -79,11 +88,43 @@ Game.clearFrame = function () {
 
 Game.setFrame = function(name)
 {
-    if (Game.frames[name] && Game.currentFrame.frameIdentifier !== name)
+    if (Game.frames[name] && Game.currentFrame.name !== name)
     {
-        Game.currentFrame.frameIdentifier = name;
+        Game.currentFrame.name = name;
         Game.currentFrame.data = Game.frames[name];
         Game.currentFrame.wasDrawn = false;
+    }
+}
+
+Game.startAnimation = function(name)
+{
+    if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet))
+    {
+        Game.currentAnimation.name = name;
+        Game.currentAnimation.data = Game.animations[name];
+        Game.currentAnimation.currentFrame = 0;
+        Game.currentAnimation.isRunning = true;
+        Game.currentAnimation.isSet = true;
+        Game.setFrame(Game.currentAnimation.data[0]);
+    }
+}
+
+Game.stopAnimation = function()
+{
+    Game.currentAnimation.isRunning = false;
+    Game.currentAnimation.isSet = false;
+}
+
+Game.animate = function()
+{
+    if (Game.currentAnimation.isSet && Game.currentAnimation.isRunning)
+    {
+        Game.currentAnimation.currentFrame++;
+        if (Game.currentAnimation.data.duration === Game.currentAnimation.currentFrame)
+            Game.currentAnimation.currentFrame = 0;
+
+        if (Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame])
+            Game.setFrame(Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame]);
     }
 }
 
@@ -124,6 +165,8 @@ Game.Run = function (params) {
     Game.canvas = document.getElementById("screen");
     AddEvent(document.getElementById("whitebutton"), "click", function() { Game.setFrame("test"); });
     AddEvent(document.getElementById("blackbutton"), "click", function() { Game.setFrame("test2"); });
+    AddEvent(document.getElementById("startanimationbutton"), "click", function() { Game.startAnimation("test"); });
+    AddEvent(document.getElementById("stopanimationbutton"), "click", function() { Game.stopAnimation(); });
     if (!Game.canvas.getContext) {
         console.error("Canvas is not supported!");
         return;
