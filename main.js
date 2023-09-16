@@ -86,20 +86,16 @@ Game.clearFrame = function () {
     Game.canvasContext.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
 }
 
-Game.setFrame = function(name)
-{
-    if (Game.frames[name] && Game.currentFrame.name !== name)
-    {
+Game.setFrame = function (name) {
+    if (Game.frames[name] && Game.currentFrame.name !== name) {
         Game.currentFrame.name = name;
         Game.currentFrame.data = Game.frames[name];
         Game.currentFrame.wasDrawn = false;
     }
 }
 
-Game.startAnimation = function(name)
-{
-    if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet))
-    {
+Game.startAnimation = function (name) {
+    if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet)) {
         Game.currentAnimation.name = name;
         Game.currentAnimation.data = Game.animations[name];
         Game.currentAnimation.currentFrame = 0;
@@ -109,16 +105,13 @@ Game.startAnimation = function(name)
     }
 }
 
-Game.stopAnimation = function()
-{
+Game.stopAnimation = function () {
     Game.currentAnimation.isRunning = false;
     Game.currentAnimation.isSet = false;
 }
 
-Game.animate = function()
-{
-    if (Game.currentAnimation.isSet && Game.currentAnimation.isRunning)
-    {
+Game.animate = function () {
+    if (Game.currentAnimation.isSet && Game.currentAnimation.isRunning) {
         Game.currentAnimation.currentFrame++;
         if (Game.currentAnimation.data.duration === Game.currentAnimation.currentFrame)
             Game.currentAnimation.currentFrame = 0;
@@ -159,14 +152,105 @@ Game.Draw = function () {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+/// Debugging
+
+Game.debugMode = false;
+Game.debugConsole = null;
+
+Game.showDebugConsole = function () {
+    if (!Game.debugConsole) {
+        let debugConsole = document.createElement("div");
+        debugConsole.id = "debugconsole";
+        debugConsole.style.position = "absolute";
+        debugConsole.style.top = 0;
+        debugConsole.style.border = "1px solid black";
+        debugConsole.style.margin = "10px";
+        debugConsole.style.padding = "30px 10px 10px 10px";
+        debugConsole.style.background = "#ffae0080";
+        Game.debugConsole = debugConsole;
+
+        {
+            let heading = document.createElement("div");
+            heading.innerText = "Debugging";
+            heading.style.position = "absolute";
+            heading.style.top = "2px";
+            heading.style.left = "2px";
+            heading.style.fontSize = 14;
+            heading.style.fontFamily = "sans-serif";
+            debugConsole.appendChild(heading);
+
+            let closeButton = document.createElement("button");
+            closeButton.innerText = "X";
+            closeButton.style.position = "absolute";
+            closeButton.style.right = 0;
+            closeButton.style.top = 0;
+            AddEvent(closeButton, "click", Game.hideDebugConsole);
+            debugConsole.appendChild(closeButton);
+        }
+
+        debugConsole.addContainer = function () {
+            let container = document.createElement("div");
+            debugConsole.appendChild(container);
+            debugConsole.lastContainer = container;
+        }
+
+        // Add default container
+        debugConsole.addContainer();
+
+        debugConsole.addSpace = function (amount) {
+            debugConsole.lastContainer.style.marginBottom = amount + "px";
+            debugConsole.addContainer();
+        }
+
+        debugConsole.addButton = function (text, callback, inline) {
+            let button = document.createElement("button");
+            button.innerText = text;
+            button.style.margin = "4px 2px";
+            AddEvent(button, "click", callback);
+            if (!inline) {
+                debugConsole.addContainer();
+            }
+            debugConsole.lastContainer.appendChild(button);
+        }
+
+        debugConsole.addHeading = function (text) {
+            let heading = document.createElement("div");
+            heading.innerText = text;
+            heading.style.fontSize = 16;
+            heading.style.fontWeight = "bold";
+            heading.style.fontFamily = "sans-serif";
+            debugConsole.lastContainer.appendChild(heading);
+        }
+
+        debugConsole.addHeading("Frame Test");
+        debugConsole.addButton("white", function () { Game.setFrame("test"); }, false);
+        debugConsole.addButton("black", function () { Game.setFrame("test2"); }, true);
+        debugConsole.addSpace(10);
+        debugConsole.addHeading("Animation Test");
+        debugConsole.addButton("start", function () { Game.startAnimation("test"); }, false);
+        debugConsole.addButton("stop", function () { Game.stopAnimation(); }, true);
+
+        Game.debugMode = true;
+
+        Game.body.appendChild(debugConsole);
+    }
+}
+
+Game.hideDebugConsole = function () {
+    if (Game.debugConsole) {
+        Game.debugConsole.remove();
+        Game.debugMode = false;
+        Game.debugConsole = null;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 /// Core
 
 Game.Run = function (params) {
+    Game.body = document.body;
     Game.canvas = document.getElementById("screen");
-    AddEvent(document.getElementById("whitebutton"), "click", function() { Game.setFrame("test"); });
-    AddEvent(document.getElementById("blackbutton"), "click", function() { Game.setFrame("test2"); });
-    AddEvent(document.getElementById("startanimationbutton"), "click", function() { Game.startAnimation("test"); });
-    AddEvent(document.getElementById("stopanimationbutton"), "click", function() { Game.stopAnimation(); });
+
     if (!Game.canvas.getContext) {
         console.error("Canvas is not supported!");
         return;
