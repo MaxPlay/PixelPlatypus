@@ -29,6 +29,10 @@ function FireEvent(element, event) {
     }
 }
 
+function Find(id) {
+    return document.getElementById(id);
+}
+
 var Game = {}
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +56,28 @@ Game.animations = {
         }
     }
 };
+
+Vector2 = function (x, y) {
+    this.x = x;
+    this.y = y;
+
+    this.add = function (other) {
+        this.x += other.x;
+        this.y += other.y;
+    }
+}
+
+Rect = function (x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+}
+
+Sprite = function (data, position) {
+    this.location = new Rect(position.x, position.y, data[0], data[1]);
+    this.data = data;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Input
@@ -84,19 +110,36 @@ Game.loop = function () {
     Game.processInput();
     Game.animate();
     Game.ticks++;
+
+    Game.spriteBatch.add("test", new Vector2(2, 0));
+
     setTimeout(Game.loop, 1000 / Game.fps);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Rendering
 
-Game.screenSize = { x: 32, y: 16 }
+Game.screenSize = new Vector2(32, 16);
 
 Game.currentSprite = {
     wasDrawn: false,
     name: "",
     data: [],
-    location: { x: 0, y: 0, w: 0, h: 0 }
+    location: new Rect(0, 0, 0, 0)
+}
+
+Game.spriteBatch = {
+    data: []
+}
+
+Game.spriteBatch.add = function (name, position) {
+    if (Game.sprites[name]) {
+        this.data.push(new Sprite(Game.sprites[name], position));
+    }
+}
+
+Game.spriteBatch.clear = function () {
+    this.data = [];
 }
 
 Game.currentAnimation = {
@@ -105,7 +148,7 @@ Game.currentAnimation = {
     currentFrame: 0,
     isRunning: false,
     isSet: false,
-    position: { x: 0, y: 0 }
+    position: new Vector2(0, 0)
 }
 
 Game.clearFrame = function () {
@@ -113,16 +156,16 @@ Game.clearFrame = function () {
     Game.canvasContext.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
 }
 
-Game.setSprite = function (name, position = { x: 0, y: 0 }) {
+Game.setSprite = function (name, position = new Vector2(0, 0)) {
     if (Game.sprites[name] && Game.currentSprite.name !== name) {
         Game.currentSprite.name = name;
         Game.currentSprite.data = Game.sprites[name];
         Game.currentSprite.wasDrawn = false;
-        Game.currentSprite.location = { x: position.x, y: position.y, w: Game.currentSprite.data[0], h: Game.currentSprite.data[1] };
+        Game.currentSprite.location = new Rect(position.x, position.y, Game.currentSprite.data[0], Game.currentSprite.data[1]);
     }
 }
 
-Game.startAnimation = function (name, position = { x: 0, y: 0 }) {
+Game.startAnimation = function (name, position = new Vector2(0, 0)) {
     if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet)) {
         Game.currentAnimation.name = name;
         Game.currentAnimation.data = Game.animations[name];
@@ -151,38 +194,33 @@ Game.animate = function () {
 }
 
 Game.draw = function () {
-    let currentSprite = Game.currentSprite;
-    if (!currentSprite.wasDrawn) {
-        let screenSize = { x: Game.canvas.width, y: Game.canvas.height };
-        let context = Game.canvasContext;
+    let screenSize = new Vector2(Game.canvas.width, Game.canvas.height);
+    let context = Game.canvasContext;
 
-        let frameSize = Game.screenSize;
-        let pixelSize = { x: screenSize.x / frameSize.x, y: screenSize.y / frameSize.y };
+    let frameSize = Game.screenSize;
+    let pixelSize = new Vector2(screenSize.x / frameSize.x, screenSize.y / frameSize.y);
 
-        Game.clearFrame();
+    Game.clearFrame();
 
-        if (currentSprite.data.length > 2) {
-
-            let isBlack = !!currentSprite.data[2];
-            let spriteSize = currentSprite.location;
+    Game.spriteBatch.data.forEach(element => {
+        if (element.data.length > 2) {
+            let isBlack = !!element.data[2];
+            let spriteSize = element.location;
             let pixelIndex = 0;
-            for (let i = 3; i < currentSprite.data.length; i++) {
+            for (let i = 3; i < element.data.length; i++) {
                 context.fillStyle = isBlack ? Game.colors.black : Game.colors.white;
-                for (let j = 0; j < currentSprite.data[i]; j++) {
+                for (let j = 0; j < element.data[i]; j++) {
                     let x = pixelIndex % spriteSize.w;
                     let y = Math.floor(pixelIndex / spriteSize.w);
-                    context.fillRect(x * pixelSize.x + spriteSize.x, y * pixelSize.y + spriteSize.y, pixelSize.x, pixelSize.y);
+                    context.fillRect((x + spriteSize.x) * pixelSize.x, (y + spriteSize.y) * pixelSize.y, pixelSize.x, pixelSize.y);
                     pixelIndex++;
                 }
                 isBlack = !isBlack;
             }
         }
-        else {
-            console.error("currentSprite has not enough data");
-        }
-        currentSprite.wasDrawn = true;
-    }
+    });
 
+    Game.spriteBatch.clear();
     setTimeout(Game.draw, 1000 / Game.fps);
 }
 
@@ -279,13 +317,62 @@ Game.hideDebugConsole = function () {
     }
 }
 
+class Tool {
+
+    constructor(name, identifier) {
+        this.name = name;
+        this.identifier = identifier;
+
+        Game.tools.add(this);
+    }
+
+    init() { }
+}
+
+Game.tools = {}
+Game.tools.add = function (tool) {
+    if (Game.toolbar) {
+        let button = document.createElement("button");
+        button.id = "open-" + tool.identifier;
+        button.innerText = "Open " + tool.name;
+        button.style.display = "block";
+        Game.toolbar.appendChild(button);
+
+        AddEvent(Find(button.id), "click", function () { Find(tool.identifier + "-container").style.visibility = "visible"; });
+        tool.init();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/// Paint Tool
+
+class PaintTool extends Tool {
+    constructor() {
+        super("Paint Tool", "paint-tool");
+    }
+
+    init() {
+        AddEvent(Find("close-paint-tool"), "click", function () { Find("paint-tool-container").style.visibility = "collapse"; });
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Core
 
 Game.run = function (params) {
     Game.body = document.body;
-    Game.canvas = document.getElementById("screen");
-
+    Game.canvas = Find("screen");
+    let toolbar = Find("toolbar");
+    if (toolbar) {
+        if (params.has("withtools")) {
+            Game.toolbar = toolbar;
+            new PaintTool();
+        }
+        else {
+            toolbar.remove()
+        }
+    }
+    
     if (!Game.canvas.getContext) {
         console.error("Canvas is not supported!");
         return;

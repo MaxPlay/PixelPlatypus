@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Pixel Platypus</title>
 </head>
+
 <body>
     <div id="canvas-container">
         <canvas id="screen" width="640" height="360">Hello, I am platypus!</canvas>
+        <div id="toolbar">
+            <span style="font-size: 16px; font-family: sans-serif; font-weight: bold;">Tools</span>
+        </div>
+    </div>
+    <div id="paint-tool-container" style="visibility: collapse;">
+        <button id="close-paint-tool"><svg viewBox="0 0 100 100">
+            <line x1="10" x2="90" y1="10" y2="90" stroke="#000" stroke-width="10" stroke-linecap="round" />
+            <line x1="90" x2="10" y1="10" y2="90" stroke="#000" stroke-width="10" stroke-linecap="round" />
+            </svg></button>
+        <canvas id="paint-tool" width="0" height="0">Paint Platypus!</canvas>
     </div>
     <script src="main.js"></script>
 </body>
+
 </html>
