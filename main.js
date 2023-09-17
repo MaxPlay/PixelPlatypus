@@ -31,11 +31,14 @@ function FireEvent(element, event) {
 
 var Game = {}
 
+///////////////////////////////////////////////////////////////////////////////////////
+/// Data
+
 Game.colors = { black: "rgb(0,0,0)", white: "rgb(255,255,255)" }
 
-Game.frames = {
-    test: [0, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
-    test2: [1, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
+Game.sprites = {
+    test: [20, 20, 0, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
+    test2: [20, 20, 1, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
 };
 
 Game.animations = {
@@ -51,26 +54,49 @@ Game.animations = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
+/// Input
+
+Game.pressedKeys = new Set();
+
+Game.keyDown = function (event) {
+    Game.pressedKeys.add(event.code);
+}
+
+Game.keyUp = function (event) {
+    Game.pressedKeys.delete(event.code);
+}
+
+Game.processInput = function () {
+    Game.pressedKeys.forEach(key => {
+        console.log(key);
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 /// Gameplay
 
-Game.Init = function () {
+Game.init = function () {
     Game.fps = 30;
     Game.ticks = 0;
 }
 
-Game.Loop = function () {
+Game.loop = function () {
+    Game.processInput();
     Game.animate();
     Game.ticks++;
-    setTimeout(Game.Loop, 1000 / Game.fps);
+    setTimeout(Game.loop, 1000 / Game.fps);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Rendering
 
-Game.currentFrame = {
+Game.screenSize = { x: 32, y: 16 }
+
+Game.currentSprite = {
     wasDrawn: false,
     name: "",
-    data: []
+    data: [],
+    location: { x: 0, y: 0, w: 0, h: 0 }
 }
 
 Game.currentAnimation = {
@@ -86,11 +112,12 @@ Game.clearFrame = function () {
     Game.canvasContext.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
 }
 
-Game.setFrame = function (name) {
-    if (Game.frames[name] && Game.currentFrame.name !== name) {
-        Game.currentFrame.name = name;
-        Game.currentFrame.data = Game.frames[name];
-        Game.currentFrame.wasDrawn = false;
+Game.setSprite = function (name, position = { x: 0, y: 0 }) {
+    if (Game.sprites[name] && Game.currentSprite.name !== name) {
+        Game.currentSprite.name = name;
+        Game.currentSprite.data = Game.sprites[name];
+        Game.currentSprite.wasDrawn = false;
+        Game.currentSprite.location = { x: position.x, y: position.y, w: Game.currentSprite.data[0], h: Game.currentSprite.data[1] };
     }
 }
 
@@ -121,34 +148,40 @@ Game.animate = function () {
     }
 }
 
-Game.Draw = function () {
-    let currentFrame = Game.currentFrame;
-    if (!currentFrame.wasDrawn) {
-        let screenSize = { X: Game.canvas.width, Y: Game.canvas.height };
+Game.draw = function () {
+    let currentSprite = Game.currentSprite;
+    if (!currentSprite.wasDrawn) {
+        let screenSize = { x: Game.canvas.width, y: Game.canvas.height };
         let context = Game.canvasContext;
 
-        let frameSize = { X: 20, Y: 20 };
-        let pixelSize = { X: screenSize.X / frameSize.X, Y: screenSize.Y / frameSize.Y };
+        let frameSize = Game.screenSize;
+        let pixelSize = { x: screenSize.x / frameSize.x, y: screenSize.y / frameSize.y };
 
         Game.clearFrame();
 
-        let isBlack = !!currentFrame.data[0];
-        let pixelIndex = 0;
-        for (let i = 1; i < currentFrame.data.length; i++) {
-            context.fillStyle = isBlack ? Game.colors.black : Game.colors.white;
-            for (let j = 0; j < currentFrame.data[i]; j++) {
-                let x = pixelIndex % frameSize.X;
-                let y = Math.floor(pixelIndex / frameSize.X);
-                context.fillRect(x * pixelSize.X, y * pixelSize.Y, pixelSize.X, pixelSize.Y);
-                pixelIndex++;
-            }
-            isBlack = !isBlack;
-        }
+        if (currentSprite.data.length > 2) {
 
-        currentFrame.wasDrawn = true;
+            let isBlack = !!currentSprite.data[2];
+            let spriteSize = currentSprite.location;
+            let pixelIndex = 0;
+            for (let i = 3; i < currentSprite.data.length; i++) {
+                context.fillStyle = isBlack ? Game.colors.black : Game.colors.white;
+                for (let j = 0; j < currentSprite.data[i]; j++) {
+                    let x = pixelIndex % spriteSize.w;
+                    let y = Math.floor(pixelIndex / spriteSize.w);
+                    context.fillRect(x * pixelSize.x + spriteSize.x, y * pixelSize.y + spriteSize.y, pixelSize.x, pixelSize.y);
+                    pixelIndex++;
+                }
+                isBlack = !isBlack;
+            }
+        }
+        else {
+            console.error("currentSprite has not enough data");
+        }
+        currentSprite.wasDrawn = true;
     }
 
-    setTimeout(Game.Draw, 1000 / Game.fps);
+    setTimeout(Game.draw, 1000 / Game.fps);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -223,8 +256,8 @@ Game.showDebugConsole = function () {
         }
 
         debugConsole.addHeading("Frame Test");
-        debugConsole.addButton("white", function () { Game.setFrame("test"); }, false);
-        debugConsole.addButton("black", function () { Game.setFrame("test2"); }, true);
+        debugConsole.addButton("white", function () { Game.setSprite("test"); }, false);
+        debugConsole.addButton("black", function () { Game.setSprite("test2"); }, true);
         debugConsole.addSpace(10);
         debugConsole.addHeading("Animation Test");
         debugConsole.addButton("start", function () { Game.startAnimation("test"); }, false);
@@ -247,7 +280,7 @@ Game.hideDebugConsole = function () {
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Core
 
-Game.Run = function (params) {
+Game.run = function (params) {
     Game.body = document.body;
     Game.canvas = document.getElementById("screen");
 
@@ -259,14 +292,16 @@ Game.Run = function (params) {
 
     Game.isVisible = true;
     AddEvent(document, 'visibilitychange', function (e) { Game.isVisible = (document.visibilityState === 'hidden'); });
+    AddEvent(document, "keydown", Game.keyDown);
+    AddEvent(document, "keyup", Game.keyUp);
 
-    Game.Init();
-    Game.Loop();
-    Game.Draw();
+    Game.init();
+    Game.loop();
+    Game.draw();
 }
 
 // Launcher
 window.onload = function () {
     const params = new URLSearchParams(window.location.search);
-    Game.Run(params);
+    Game.run(params);
 }
