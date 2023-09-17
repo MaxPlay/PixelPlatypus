@@ -104,7 +104,8 @@ Game.currentAnimation = {
     data: {},
     currentFrame: 0,
     isRunning: false,
-    isSet: false
+    isSet: false,
+    position: { x: 0, y: 0 }
 }
 
 Game.clearFrame = function () {
@@ -121,14 +122,15 @@ Game.setSprite = function (name, position = { x: 0, y: 0 }) {
     }
 }
 
-Game.startAnimation = function (name) {
+Game.startAnimation = function (name, position = { x: 0, y: 0 }) {
     if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet)) {
         Game.currentAnimation.name = name;
         Game.currentAnimation.data = Game.animations[name];
         Game.currentAnimation.currentFrame = 0;
         Game.currentAnimation.isRunning = true;
         Game.currentAnimation.isSet = true;
-        Game.setFrame(Game.currentAnimation.data[0]);
+        Game.currentAnimation.position = position;
+        Game.setSprite(Game.currentAnimation.data[0], position);
     }
 }
 
@@ -144,7 +146,7 @@ Game.animate = function () {
             Game.currentAnimation.currentFrame = 0;
 
         if (Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame])
-            Game.setFrame(Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame]);
+            Game.setSprite(Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame], Game.currentAnimation.position);
     }
 }
 
