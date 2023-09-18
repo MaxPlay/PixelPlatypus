@@ -38,7 +38,15 @@ var Game = {}
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Data
 
-Game.colors = { black: "rgb(0,0,0)", white: "rgb(255,255,255)" }
+Game.colors = { black: "rgb(0,0,0)", white: "rgb(255,255,255)", transparent: "rgba(0,0,0,0)" }
+Game.colors.getColor = function (type) {
+    switch (type) {
+        case 0: return Game.colors.white;
+        case 1: return Game.colors.black;
+        case 2: return Game.colors.transparent;
+        default: return Game.colors.transparent;
+    }
+}
 
 Game.sprites = {
     test: [20, 20, 0, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
@@ -331,16 +339,28 @@ class Tool {
     addButton(toolbar, id, name, callback) {
         let button = document.createElement("button");
         button.id = this.identifier + "-button-" + id;
+        button.style.margin = "0px 2px";
         button.innerText = name;
 
         toolbar.appendChild(button);
 
         AddEvent(Find(button.id), "click", callback);
     }
+
+    addSeparator(toolbar) {
+        let separator = document.createElement("span");
+        separator.style.display = "inline-block";
+        separator.style.width = "1px";
+        separator.style.height = "100%";
+        separator.style.margin = "0px 2px";
+        separator.style.backgroundColor = "#fff";
+        toolbar.appendChild(separator);
+    }
 }
 
 Game.tools = {}
 Game.tools.collection = [];
+Game.tools.byId = {}
 Game.tools.initialized = false;
 Game.tools.add = function (tool) {
     if (Game.toolbar) {
@@ -352,6 +372,7 @@ Game.tools.add = function (tool) {
 
         AddEvent(Find(button.id), "click", function () { Find(tool.identifier + "-container").style.visibility = "visible"; });
         Game.tools.collection.push(tool);
+        Game.tools.byId[tool.identifier] = tool;
         if (this.initialized)
             tool.init();
     }
@@ -374,13 +395,157 @@ Game.tools.init = function () {
 class PaintTool extends Tool {
     constructor() {
         super("Paint Tool", "paint-tool");
+        this.canvas = Find("paint-tool");
+        this.canvasContext = this.canvas.getContext("2d", { alpha: false });
         this.toolbar = Find("paint-tool-toolbar");
+        this.modeDisplay = Find("paint-tool-mode");
+        this.selectedTool = "paint";
+        this.selectedColor = 0;
+        this.imageData = [];
+        this.size = new Vector2(0, 0);
+        this.changeSize(20, 20, 0);
     }
 
     init() {
         AddEvent(Find("close-paint-tool"), "click", function () { Find("paint-tool-container").style.visibility = "collapse"; });
 
-        this.addButton(this.toolbar, "alert", "alert", function () { alert("platypus!") })
+        this.addButton(this.toolbar, "white", "Color: White", this.setColorWhite);
+        this.addButton(this.toolbar, "black", "Color: Black", this.setColorBlack);
+        this.addSeparator(this.toolbar);
+        this.addButton(this.toolbar, "paint", "Paint", this.setToolPaint);
+        this.addButton(this.toolbar, "fill", "Fill", this.setToolFill);
+        this.addButton(this.toolbar, "erase", "Erase", this.setToolErase);
+        this.addSeparator(this.toolbar);
+        this.addButton(this.toolbar, "change-size", "Change Size", this.showChangeSize);
+        this.addButton(this.toolbar, "repaint", "Repaint", this.repaint);
+
+        AddEvent(this.canvas, "mousedown", this.canvasMouseDown);
+        AddEvent(this.canvas, "mousemove", this.canvasMouseMove);
+        AddEvent(this.canvas, "mouseup", this.canvasMouseUp);
+
+        this.refreshMode();
+    }
+
+    setColorWhite() {
+        let me = Game.tools.byId["paint-tool"];
+        me.selectedColor = 0;
+        me.refreshMode();
+    }
+
+    setColorBlack() {
+        let me = Game.tools.byId["paint-tool"];
+        me.selectedColor = 1;
+        me.refreshMode();
+    }
+
+    setToolPaint() {
+        let me = Game.tools.byId["paint-tool"];
+        me.selectedTool = "paint";
+        me.refreshMode();
+    }
+
+    setToolFill() {
+        let me = Game.tools.byId["paint-tool"];
+        me.selectedTool = "fill";
+        me.refreshMode();
+    }
+
+    setToolErase() {
+        let me = Game.tools.byId["paint-tool"];
+        me.selectedTool = "erase";
+        me.refreshMode();
+    }
+
+    showChangeSize() {
+        let me = Game.tools.byId["paint-tool"];
+
+    }
+
+    changeSize(x, y, direction) {
+        let me = Game.tools.byId["paint-tool"];
+        me.size.x = x;
+        me.size.y = y;
+
+        me.canvas.width = x * 20;
+        me.canvas.height = y * 20;
+        me.imageData = [];
+        for (let i = 0; i < x * y; i++) {
+            me.imageData.push(2);
+        }
+        me.repaint();
+    }
+
+    canvasMouseDown(event) {
+        let me = Game.tools.byId["paint-tool"];
+        me.isMouseDown = true;
+        me.canvasInput(event.pageX, event.pageY);
+    }
+
+    canvasMouseMove(event) {
+        let me = Game.tools.byId["paint-tool"];
+        if (me.isMouseDown)
+            me.canvasInput(event.pageX, event.pageY);
+    }
+
+    canvasMouseUp(event) {
+        let me = Game.tools.byId["paint-tool"];
+        me.isMouseDown = false;
+    }
+
+    canvasInput(inX, inY) {
+        let me = Game.tools.byId["paint-tool"];
+        const rawX = inX - me.canvas.offsetLeft + me.canvas.clientLeft;
+        const rawY = inY - me.canvas.offsetTop + me.canvas.clientTop;
+
+        const x = Math.floor(rawX / 20);
+        const y = Math.floor(rawY / 20);
+
+        let selectedColor = me.selectedColor;
+        if (me.selectedTool === "erase")
+            selectedColor = 3;
+
+        let previousColor = me.imageData[x + y * me.size.x];
+        if (previousColor !== selectedColor) {
+            me.imageData[x + y * me.size.x] = selectedColor;
+            if (me.selectedTool === "fill") {
+                // TODO: Do a flood fill here for each adjacent pixel that is in 'previousColor' and set it to 'selectedColor'
+            }
+            me.repaint();
+        }
+    }
+
+    repaint() {
+        let me = Game.tools.byId["paint-tool"];
+
+        for (let i = 0; i < me.size.x * 2 * me.size.y * 2; i++) {
+            let x = i % (me.size.x * 2);
+            let y = Math.floor(i / (me.size.x * 2));
+            let a = Math.abs((i % 2) - (y % 2)) == 0;
+            me.canvasContext.fillStyle = a ? "rgb(245,245,245)" : "rgb(200,200,200)";
+            me.canvasContext.fillRect(x * 10, y * 10, 10, 10);
+        }
+        let pixelIndex = 0;
+        me.imageData.forEach(pixel => {
+            let x = pixelIndex % me.size.x;
+            let y = Math.floor(pixelIndex / me.size.x);
+            pixelIndex++;
+
+            me.canvasContext.fillStyle = Game.colors.getColor(pixel);
+            me.canvasContext.fillRect(x * 20, y * 20, 20, 20);
+        });
+    }
+
+    refreshMode() {
+        let me = Game.tools.byId["paint-tool"];
+        let display = "";
+        let colorBlock = '<span style="display: inline-block; width: 15px; height: 15px; border: solid #888 1px; background-color: ' + Game.colors.getColor(me.selectedColor) + '"></span>'
+        if (me.selectedTool === "erase")
+            display = "Erase";
+        else if (me.selectedTool === "paint")
+            display = 'Paint ' + colorBlock;
+        else if (me.selectedTool === "fill")
+            display = 'Fill ' + colorBlock;
+        me.modeDisplay.innerHTML = display;
     }
 }
 

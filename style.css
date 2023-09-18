@@ -16,8 +16,9 @@ body {
 
 #paint-tool-container {
     position: absolute;
-    top:0;
+    top: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
@@ -35,10 +36,22 @@ body {
     border-left: solid 2px #000;
 }
 
-#close-paint-tool{
+#close-paint-tool {
     position: absolute;
     width: 100px;
     height: 100px;
     top: 0;
     right: 0;
+}
+
+#paint-tool-mode {
+    font-weight: bold;
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+#paint-tool-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
