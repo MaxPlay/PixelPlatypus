@@ -327,9 +327,21 @@ class Tool {
     }
 
     init() { }
+
+    addButton(toolbar, id, name, callback) {
+        let button = document.createElement("button");
+        button.id = this.identifier + "-button-" + id;
+        button.innerText = name;
+
+        toolbar.appendChild(button);
+
+        AddEvent(Find(button.id), "click", callback);
+    }
 }
 
 Game.tools = {}
+Game.tools.collection = [];
+Game.tools.initialized = false;
 Game.tools.add = function (tool) {
     if (Game.toolbar) {
         let button = document.createElement("button");
@@ -339,8 +351,21 @@ Game.tools.add = function (tool) {
         Game.toolbar.appendChild(button);
 
         AddEvent(Find(button.id), "click", function () { Find(tool.identifier + "-container").style.visibility = "visible"; });
-        tool.init();
+        Game.tools.collection.push(tool);
+        if (this.initialized)
+            tool.init();
     }
+}
+
+Game.tools.init = function () {
+    if (this.initialized)
+        return;
+
+    Game.tools.collection.forEach(tool => {
+        tool.init();
+    });
+
+    this.initialized = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -349,10 +374,13 @@ Game.tools.add = function (tool) {
 class PaintTool extends Tool {
     constructor() {
         super("Paint Tool", "paint-tool");
+        this.toolbar = Find("paint-tool-toolbar");
     }
 
     init() {
         AddEvent(Find("close-paint-tool"), "click", function () { Find("paint-tool-container").style.visibility = "collapse"; });
+
+        this.addButton(this.toolbar, "alert", "alert", function () { alert("platypus!") })
     }
 }
 
@@ -372,7 +400,7 @@ Game.run = function (params) {
             toolbar.remove()
         }
     }
-    
+
     if (!Game.canvas.getContext) {
         console.error("Canvas is not supported!");
         return;
@@ -384,6 +412,7 @@ Game.run = function (params) {
     AddEvent(document, "keydown", Game.keyDown);
     AddEvent(document, "keyup", Game.keyUp);
 
+    Game.tools.init();
     Game.init();
     Game.loop();
     Game.draw();
