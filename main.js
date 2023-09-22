@@ -330,19 +330,26 @@ class Tool {
     constructor(name, identifier) {
         this.name = name;
         this.identifier = identifier;
+        this.buttonGroups = {}
 
         Game.tools.add(this);
     }
 
     init() { }
 
-    addButton(toolbar, id, name, callback) {
+    addButton(toolbar, id, content, callback, group = null) {
         let button = document.createElement("button");
         button.id = this.identifier + "-button-" + id;
-        button.style.margin = "0px 2px";
-        button.innerText = name;
+        button.innerHTML = content;
 
         toolbar.appendChild(button);
+
+        if (group !== null) {
+            if (this.buttonGroups[group] === undefined)
+                this.buttonGroups[group] = { ids: [], buttonsByIds: {} };
+            this.buttonGroups[group].ids.push(id);
+            this.buttonGroups[group].buttonsByIds[id] = button;
+        }
 
         AddEvent(Find(button.id), "click", callback);
     }
@@ -355,6 +362,19 @@ class Tool {
         separator.style.margin = "0px 2px";
         separator.style.backgroundColor = "#fff";
         toolbar.appendChild(separator);
+    }
+
+    highlightGroupButton(group, id) {
+        if (this.buttonGroups[group] !== undefined) {
+            let buttonsByIds = this.buttonGroups[group].buttonsByIds;
+            this.buttonGroups[group].ids.forEach(buttonId => {
+                let button = buttonsByIds[buttonId];
+                if (buttonId === id)
+                    button.classList.add("selected");
+                else
+                    button.classList.remove("selected");
+            });
+        }
     }
 }
 
@@ -398,9 +418,11 @@ class PaintTool extends Tool {
         this.canvas = Find("paint-tool");
         this.canvasContext = this.canvas.getContext("2d", { alpha: false });
         this.toolbar = Find("paint-tool-toolbar");
-        this.modeDisplay = Find("paint-tool-mode");
-        this.selectedTool = "paint";
-        this.selectedColor = 0;
+        this.brush = {
+            tool: "paint",
+            color: 0,
+            size: 1
+        }
         this.imageData = [];
         this.size = new Vector2(0, 0);
         this.changeSize(20, 20, 0);
@@ -409,12 +431,17 @@ class PaintTool extends Tool {
     init() {
         AddEvent(Find("close-paint-tool"), "click", function () { Find("paint-tool-container").style.visibility = "collapse"; });
 
-        this.addButton(this.toolbar, "white", "Color: White", this.setColorWhite);
-        this.addButton(this.toolbar, "black", "Color: Black", this.setColorBlack);
+        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', this.setColorWhite, "color");
+        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', this.setColorBlack, "color");
         this.addSeparator(this.toolbar);
-        this.addButton(this.toolbar, "paint", "Paint", this.setToolPaint);
-        this.addButton(this.toolbar, "fill", "Fill", this.setToolFill);
-        this.addButton(this.toolbar, "erase", "Erase", this.setToolErase);
+        this.addButton(this.toolbar, "paint", '<svg width="20" height="20"><rect id="svg_21" height="2.68748" width="3.06248" y="14.96872" x="14.12497" stroke="#000" fill="#000000"/><rect transform="rotate(-41.2257, 10.1057, 9.9232)" id="svg_19" height="15.93494" width="4.43747" y="1.95573" x="7.88692" stroke="#000" fill="#ffffff"/><rect rx="1" transform="rotate(-41.2257, 4.36706, 3.37399)" id="svg_22" height="2.05906" width="4.43747" y="2.34446" x="2.14833" stroke="#000" fill="#000000"/></svg>', this.setToolPaint, "tool");
+        this.addButton(this.toolbar, "fill", '<svg width="20" height="20"><ellipse transform="rotate(14.1157, 14.7187, 8.87501)" ry="1.34374" rx="3.09373" id="svg_6" cy="8.87501" cx="14.71872" stroke="#000" fill="#000000"/><rect transform="rotate(42.8183, 9.03079, 11.9955)" id="svg_1" height="11.06243" width="8.53023" y="6.46431" x="4.76568" stroke="#000" fill="#fff"/><line id="svg_3" y2="9.34376" x2="10.0625" y1="3.46879" x1="5.56253" stroke="#000" fill="none"/><ellipse ry="1.90624" rx="0.96874" id="svg_7" cy="10.93749" cx="17.15621" stroke="#000" fill="#000000"/><ellipse ry="2.71873" rx="0.75" id="svg_8" cy="12.68748" cx="17.43745" stroke="#000" fill="#000000"/></svg>', this.setToolFill, "tool");
+        this.addButton(this.toolbar, "erase", '<svg width="20" height="20"><rect rx="1" transform="rotate(42.8183, 10.1665, 9.79617)" id="svg_1" height="8.01821" width="15.99863" y="5.78707" x="2.16717" stroke="#000" fill="#fff"/><rect rx="1" transform="rotate(42.8183, 13.1373, 12.4864)" id="svg_9" height="8.01821" width="7.4266" y="8.47729" x="9.42397" stroke="#000" fill="#000000"/><line id="svg_10" y2="17.9062" x2="10.93749" y1="17.9062" x1="4.81253" stroke="#000" fill="none"/></svg>', this.setToolErase, "tool");
+        this.addSeparator(this.toolbar);
+        this.addButton(this.toolbar, "brushsize-1", '<svg width="20" height="20"><rect height="2" width="2" x="9" y="9" fill="#000"></svg>', this.setBrushSize1, "brushsize");
+        this.addButton(this.toolbar, "brushsize-2", '<svg width="20" height="20"><rect height="6" width="6" x="7" y="7" fill="#000"></svg>', this.setBrushSize2, "brushsize");
+        this.addButton(this.toolbar, "brushsize-3", '<svg width="20" height="20"><rect height="10" width="10" x="5" y="5" fill="#000"></svg>', this.setBrushSize3, "brushsize");
+        this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', this.setBrushSize4, "brushsize");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "change-size", "Change Size", this.showChangeSize);
         this.addButton(this.toolbar, "repaint", "Repaint", this.repaint);
@@ -428,31 +455,55 @@ class PaintTool extends Tool {
 
     setColorWhite() {
         let me = Game.tools.byId["paint-tool"];
-        me.selectedColor = 0;
+        me.brush.color = 0;
         me.refreshMode();
     }
 
     setColorBlack() {
         let me = Game.tools.byId["paint-tool"];
-        me.selectedColor = 1;
+        me.brush.color = 1;
         me.refreshMode();
     }
 
     setToolPaint() {
         let me = Game.tools.byId["paint-tool"];
-        me.selectedTool = "paint";
+        me.brush.tool = "paint";
         me.refreshMode();
     }
 
     setToolFill() {
         let me = Game.tools.byId["paint-tool"];
-        me.selectedTool = "fill";
+        me.brush.tool = "fill";
         me.refreshMode();
     }
 
     setToolErase() {
         let me = Game.tools.byId["paint-tool"];
-        me.selectedTool = "erase";
+        me.brush.tool = "erase";
+        me.refreshMode();
+    }
+
+    setBrushSize1() {
+        let me = Game.tools.byId["paint-tool"];
+        me.brush.size = 1;
+        me.refreshMode();
+    }
+
+    setBrushSize2() {
+        let me = Game.tools.byId["paint-tool"];
+        me.brush.size = 2;
+        me.refreshMode();
+    }
+
+    setBrushSize3() {
+        let me = Game.tools.byId["paint-tool"];
+        me.brush.size = 3;
+        me.refreshMode();
+    }
+
+    setBrushSize4() {
+        let me = Game.tools.byId["paint-tool"];
+        me.brush.size = 4;
         me.refreshMode();
     }
 
@@ -500,18 +551,34 @@ class PaintTool extends Tool {
         const x = Math.floor(rawX / 20);
         const y = Math.floor(rawY / 20);
 
-        let selectedColor = me.selectedColor;
-        if (me.selectedTool === "erase")
+        const brush = me.brush;
+
+        let selectedColor = me.brush.color;
+        if (me.brush.tool === "erase")
             selectedColor = 3;
 
         let previousColor = me.imageData[x + y * me.size.x];
-        if (previousColor !== selectedColor) {
-            me.imageData[x + y * me.size.x] = selectedColor;
-            if (me.selectedTool === "fill") {
-                // TODO: Do a flood fill here for each adjacent pixel that is in 'previousColor' and set it to 'selectedColor'
-            }
-            me.repaint();
+        if (me.brush.tool === "fill" && previousColor !== selectedColor) {
+            // TODO: Do a flood fill here for each adjacent pixel that is in 'previousColor' and set it to 'selectedColor'
         }
+        else {
+            const offset = 1 - (brush.size % 2);
+            const extentA = Math.floor(brush.size / 2) - offset;
+            const extentB = Math.ceil(brush.size / 2) + offset;
+            let brushSize = {
+                left: Math.max(0, x - extentA),
+                top: Math.max(0, y - extentA),
+                right: Math.min(me.size.x, x + extentB),
+                bottom: Math.min(me.size.y, y + extentB)
+            };
+            console.info(JSON.stringify(brushSize));
+            for (let targetX = brushSize.left; targetX < brushSize.right; targetX++) {
+                for (let targetY = brushSize.top; targetY < brushSize.bottom; targetY++) {
+                    me.imageData[targetX + targetY * me.size.x] = selectedColor;
+                }
+            }
+        }
+        me.repaint();
     }
 
     repaint() {
@@ -536,16 +603,21 @@ class PaintTool extends Tool {
     }
 
     refreshMode() {
+        const colorLookup = {
+            0: "white",
+            1: "black"
+        };
+        const brushSizeLookup = {
+            1: "brushsize-1",
+            2: "brushsize-2",
+            3: "brushsize-3",
+            4: "brushsize-4"
+        };
+
         let me = Game.tools.byId["paint-tool"];
-        let display = "";
-        let colorBlock = '<span style="display: inline-block; width: 15px; height: 15px; border: solid #888 1px; background-color: ' + Game.colors.getColor(me.selectedColor) + '"></span>'
-        if (me.selectedTool === "erase")
-            display = "Erase";
-        else if (me.selectedTool === "paint")
-            display = 'Paint ' + colorBlock;
-        else if (me.selectedTool === "fill")
-            display = 'Fill ' + colorBlock;
-        me.modeDisplay.innerHTML = display;
+        me.highlightGroupButton("tool", me.brush.tool);
+        me.highlightGroupButton("color", colorLookup[me.brush.color]);
+        me.highlightGroupButton("brushsize", brushSizeLookup[me.brush.size]);
     }
 }
 

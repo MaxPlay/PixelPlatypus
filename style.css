@@ -55,3 +55,12 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+button {
+    border: #fff 1px solid;
+    margin: 0px 2px;
+}
+
+button.selected {
+    border: #000 2px solid;
+}
