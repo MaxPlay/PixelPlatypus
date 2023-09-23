@@ -445,7 +445,7 @@ class PaintTool extends Tool {
         this.addButton(this.toolbar, "erase", '<svg width="20" height="20"><rect rx="1" transform="rotate(42.8183, 10.1665, 9.79617)" id="svg_1" height="8.01821" width="15.99863" y="5.78707" x="2.16717" stroke="#000" fill="#fff"/><rect rx="1" transform="rotate(42.8183, 13.1373, 12.4864)" id="svg_9" height="8.01821" width="7.4266" y="8.47729" x="9.42397" stroke="#000" fill="#000000"/><line id="svg_10" y2="17.9062" x2="10.93749" y1="17.9062" x1="4.81253" stroke="#000" fill="none"/></svg>', () => setBrushData("tool", "erase"), "tool");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "brushsize-1", '<svg width="20" height="20"><rect height="2" width="2" x="9" y="9" fill="#000"></svg>', () => setBrushData("size", 1), "brushsize");
-        this.addButton(this.toolbar, "brushsize-2", '<svg width="20" height="20"><rect height="6" width="6" x="7" y="7" fill="#000"></svg>',   () => setBrushData("size", 2), "brushsize");
+        this.addButton(this.toolbar, "brushsize-2", '<svg width="20" height="20"><rect height="6" width="6" x="7" y="7" fill="#000"></svg>', () => setBrushData("size", 2), "brushsize");
         this.addButton(this.toolbar, "brushsize-3", '<svg width="20" height="20"><rect height="10" width="10" x="5" y="5" fill="#000"></svg>', () => setBrushData("size", 3), "brushsize");
         this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', () => setBrushData("size", 4), "brushsize");
         this.addSeparator(this.toolbar);
@@ -511,7 +511,7 @@ class PaintTool extends Tool {
 
         let previousColor = me.imageData[x + y * me.size.x];
         if (me.brush.tool === "fill" && previousColor !== selectedColor) {
-            // TODO: Do a flood fill here for each adjacent pixel that is in 'previousColor' and set it to 'selectedColor'
+            me.floodFill(selectedColor, previousColor, new Vector2(x, y));
         }
         else {
             const offset = 1 - (brush.size % 2);
@@ -531,6 +531,19 @@ class PaintTool extends Tool {
             }
         }
         me.repaint();
+    }
+
+    floodFill(color, target, location) {
+        if (location.x >= 0 && location.x < this.size.x && location.y >= 0 && location.y < this.size.y) {
+            let currentColor = this.imageData[location.x + location.y * this.size.x];
+            if (currentColor == target) {
+                this.imageData[location.x + location.y * this.size.x] = color;
+                this.floodFill(color, target, new Vector2(location.x - 1, location.y));
+                this.floodFill(color, target, new Vector2(location.x + 1, location.y));
+                this.floodFill(color, target, new Vector2(location.x, location.y - 1));
+                this.floodFill(color, target, new Vector2(location.x, location.y + 1));
+            }
+        }
     }
 
     repaint() {
