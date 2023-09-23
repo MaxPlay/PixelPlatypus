@@ -431,17 +431,23 @@ class PaintTool extends Tool {
     init() {
         AddEvent(Find("close-paint-tool"), "click", function () { Find("paint-tool-container").style.visibility = "collapse"; });
 
-        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', this.setColorWhite, "color");
-        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', this.setColorBlack, "color");
+        function setBrushData(id, value) {
+            let me = Game.tools.byId["paint-tool"];
+            me.brush[id] = value;
+            me.refreshMode();
+        }
+
+        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', () => setBrushData("color", 0), "color");
+        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', () => setBrushData("color", 1), "color");
         this.addSeparator(this.toolbar);
-        this.addButton(this.toolbar, "paint", '<svg width="20" height="20"><rect id="svg_21" height="2.68748" width="3.06248" y="14.96872" x="14.12497" stroke="#000" fill="#000000"/><rect transform="rotate(-41.2257, 10.1057, 9.9232)" id="svg_19" height="15.93494" width="4.43747" y="1.95573" x="7.88692" stroke="#000" fill="#ffffff"/><rect rx="1" transform="rotate(-41.2257, 4.36706, 3.37399)" id="svg_22" height="2.05906" width="4.43747" y="2.34446" x="2.14833" stroke="#000" fill="#000000"/></svg>', this.setToolPaint, "tool");
-        this.addButton(this.toolbar, "fill", '<svg width="20" height="20"><ellipse transform="rotate(14.1157, 14.7187, 8.87501)" ry="1.34374" rx="3.09373" id="svg_6" cy="8.87501" cx="14.71872" stroke="#000" fill="#000000"/><rect transform="rotate(42.8183, 9.03079, 11.9955)" id="svg_1" height="11.06243" width="8.53023" y="6.46431" x="4.76568" stroke="#000" fill="#fff"/><line id="svg_3" y2="9.34376" x2="10.0625" y1="3.46879" x1="5.56253" stroke="#000" fill="none"/><ellipse ry="1.90624" rx="0.96874" id="svg_7" cy="10.93749" cx="17.15621" stroke="#000" fill="#000000"/><ellipse ry="2.71873" rx="0.75" id="svg_8" cy="12.68748" cx="17.43745" stroke="#000" fill="#000000"/></svg>', this.setToolFill, "tool");
-        this.addButton(this.toolbar, "erase", '<svg width="20" height="20"><rect rx="1" transform="rotate(42.8183, 10.1665, 9.79617)" id="svg_1" height="8.01821" width="15.99863" y="5.78707" x="2.16717" stroke="#000" fill="#fff"/><rect rx="1" transform="rotate(42.8183, 13.1373, 12.4864)" id="svg_9" height="8.01821" width="7.4266" y="8.47729" x="9.42397" stroke="#000" fill="#000000"/><line id="svg_10" y2="17.9062" x2="10.93749" y1="17.9062" x1="4.81253" stroke="#000" fill="none"/></svg>', this.setToolErase, "tool");
+        this.addButton(this.toolbar, "paint", '<svg width="20" height="20"><rect id="svg_21" height="2.68748" width="3.06248" y="14.96872" x="14.12497" stroke="#000" fill="#000000"/><rect transform="rotate(-41.2257, 10.1057, 9.9232)" id="svg_19" height="15.93494" width="4.43747" y="1.95573" x="7.88692" stroke="#000" fill="#ffffff"/><rect rx="1" transform="rotate(-41.2257, 4.36706, 3.37399)" id="svg_22" height="2.05906" width="4.43747" y="2.34446" x="2.14833" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "paint"), "tool");
+        this.addButton(this.toolbar, "fill", '<svg width="20" height="20"><ellipse transform="rotate(14.1157, 14.7187, 8.87501)" ry="1.34374" rx="3.09373" id="svg_6" cy="8.87501" cx="14.71872" stroke="#000" fill="#000000"/><rect transform="rotate(42.8183, 9.03079, 11.9955)" id="svg_1" height="11.06243" width="8.53023" y="6.46431" x="4.76568" stroke="#000" fill="#fff"/><line id="svg_3" y2="9.34376" x2="10.0625" y1="3.46879" x1="5.56253" stroke="#000" fill="none"/><ellipse ry="1.90624" rx="0.96874" id="svg_7" cy="10.93749" cx="17.15621" stroke="#000" fill="#000000"/><ellipse ry="2.71873" rx="0.75" id="svg_8" cy="12.68748" cx="17.43745" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "fill"), "tool");
+        this.addButton(this.toolbar, "erase", '<svg width="20" height="20"><rect rx="1" transform="rotate(42.8183, 10.1665, 9.79617)" id="svg_1" height="8.01821" width="15.99863" y="5.78707" x="2.16717" stroke="#000" fill="#fff"/><rect rx="1" transform="rotate(42.8183, 13.1373, 12.4864)" id="svg_9" height="8.01821" width="7.4266" y="8.47729" x="9.42397" stroke="#000" fill="#000000"/><line id="svg_10" y2="17.9062" x2="10.93749" y1="17.9062" x1="4.81253" stroke="#000" fill="none"/></svg>', () => setBrushData("tool", "erase"), "tool");
         this.addSeparator(this.toolbar);
-        this.addButton(this.toolbar, "brushsize-1", '<svg width="20" height="20"><rect height="2" width="2" x="9" y="9" fill="#000"></svg>', this.setBrushSize1, "brushsize");
-        this.addButton(this.toolbar, "brushsize-2", '<svg width="20" height="20"><rect height="6" width="6" x="7" y="7" fill="#000"></svg>', this.setBrushSize2, "brushsize");
-        this.addButton(this.toolbar, "brushsize-3", '<svg width="20" height="20"><rect height="10" width="10" x="5" y="5" fill="#000"></svg>', this.setBrushSize3, "brushsize");
-        this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', this.setBrushSize4, "brushsize");
+        this.addButton(this.toolbar, "brushsize-1", '<svg width="20" height="20"><rect height="2" width="2" x="9" y="9" fill="#000"></svg>', () => setBrushData("size", 1), "brushsize");
+        this.addButton(this.toolbar, "brushsize-2", '<svg width="20" height="20"><rect height="6" width="6" x="7" y="7" fill="#000"></svg>',   () => setBrushData("size", 2), "brushsize");
+        this.addButton(this.toolbar, "brushsize-3", '<svg width="20" height="20"><rect height="10" width="10" x="5" y="5" fill="#000"></svg>', () => setBrushData("size", 3), "brushsize");
+        this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', () => setBrushData("size", 4), "brushsize");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "change-size", "Change Size", this.showChangeSize);
         this.addButton(this.toolbar, "repaint", "Repaint", this.repaint);
@@ -451,60 +457,6 @@ class PaintTool extends Tool {
         AddEvent(this.canvas, "mouseup", this.canvasMouseUp);
 
         this.refreshMode();
-    }
-
-    setColorWhite() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.color = 0;
-        me.refreshMode();
-    }
-
-    setColorBlack() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.color = 1;
-        me.refreshMode();
-    }
-
-    setToolPaint() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.tool = "paint";
-        me.refreshMode();
-    }
-
-    setToolFill() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.tool = "fill";
-        me.refreshMode();
-    }
-
-    setToolErase() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.tool = "erase";
-        me.refreshMode();
-    }
-
-    setBrushSize1() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.size = 1;
-        me.refreshMode();
-    }
-
-    setBrushSize2() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.size = 2;
-        me.refreshMode();
-    }
-
-    setBrushSize3() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.size = 3;
-        me.refreshMode();
-    }
-
-    setBrushSize4() {
-        let me = Game.tools.byId["paint-tool"];
-        me.brush.size = 4;
-        me.refreshMode();
     }
 
     showChangeSize() {
