@@ -412,11 +412,61 @@ Game.tools.init = function () {
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Paint Tool
 
+class PaintToolResizeWindow {
+    constructor(basetool) {
+        this.basetool = basetool;
+        this.window = Find(basetool + "-resize");
+        this.xInput = Find(basetool + "-resize-x");
+        this.yInput = Find(basetool + "-resize-y");
+        {
+            let resizeButtons = [];
+            let me = this;
+            let index = 0;
+            ["up-left", "up", "up-right", "center-left", "center", "center-right", "down-left", "down", "down-right"].forEach(element => {
+                let button = Find("paint-tool-resize-" + element);
+                AddEvent(button, "click", () => me.setDirection(index));
+                resizeButtons.push(button);
+                ++index;
+            });
+            this.buttons = resizeButtons;
+        }
+        this.applyButton = Find("paint-tool-resize-apply");
+        AddEvent(this.applyButton, "click", this.apply);
+        this.size = new Vector2(1, 1);
+        this.oldSize = this.size;
+        this.direction = -1;
+    }
+
+    show(currentSize) {
+        this.oldSize = currentSize;
+        this.size = currentSize;
+        this.xInput.value = this.size.x;
+        this.yInput.value = this.size.y;
+        this.window.style.visibility = "inherit";
+        this.setDirection(this.direction);
+    }
+
+    setDirection(index) {
+        let me = Game.tools.byId["paint-tool"].resizeWindow;
+        me.direction = index;
+        // TODO: give the buttons a functionality
+    }
+
+    apply() {
+        let paintTool = Game.tools.byId["paint-tool"];
+        let me = paintTool.resizeWindow;
+        paintTool.changeSize(me.size, me.direction);
+
+        me.window.style.visibility = "collapse";
+    }
+};
+
 class PaintTool extends Tool {
     constructor() {
         super("Paint Tool", "paint-tool");
         this.canvas = Find("paint-tool");
         this.canvasContext = this.canvas.getContext("2d", { alpha: false });
+        this.resizeWindow = new PaintToolResizeWindow(this.identifier);
         this.toolbar = Find("paint-tool-toolbar");
         this.brush = {
             tool: "paint",
@@ -425,7 +475,7 @@ class PaintTool extends Tool {
         }
         this.imageData = [];
         this.size = new Vector2(0, 0);
-        this.changeSize(20, 20, 0);
+        this.changeSize(new Vector2(20, 20), 0);
     }
 
     init() {
@@ -449,8 +499,7 @@ class PaintTool extends Tool {
         this.addButton(this.toolbar, "brushsize-3", '<svg width="20" height="20"><rect height="10" width="10" x="5" y="5" fill="#000"></svg>', () => setBrushData("size", 3), "brushsize");
         this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', () => setBrushData("size", 4), "brushsize");
         this.addSeparator(this.toolbar);
-        this.addButton(this.toolbar, "change-size", "Change Size", this.showChangeSize);
-        this.addButton(this.toolbar, "repaint", "Repaint", this.repaint);
+        this.addButton(this.toolbar, "resize", '<svg width="20" height="20"><rect stroke-width="0" id="svg_1" height="17.625" width="18" y="1.1875" x="1" stroke="#000" fill="#000000"/><rect transform="rotate(45, 10, 10)" id="svg_4" height="18" width="18" y="1" x="1" stroke-width="0" stroke="#000" fill="#ffffff"/><rect transform="rotate(45, 10, 10)" id="svg_5" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/><rect transform="rotate(-45, 10, 10)" id="svg_6" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/></svg>', this.showResize);
 
         AddEvent(this.canvas, "mousedown", this.canvasMouseDown);
         AddEvent(this.canvas, "mousemove", this.canvasMouseMove);
@@ -459,15 +508,18 @@ class PaintTool extends Tool {
         this.refreshMode();
     }
 
-    showChangeSize() {
+    showResize() {
         let me = Game.tools.byId["paint-tool"];
-
+        me.resizeWindow.show(me.size);
     }
 
-    changeSize(x, y, direction) {
+    changeSize(size, direction) {
         let me = Game.tools.byId["paint-tool"];
-        me.size.x = x;
-        me.size.y = y;
+        let oldSize = me.size;
+        me.size = size;
+
+        let x = size.x;
+        let y = size.y;
 
         me.canvas.width = x * 20;
         me.canvas.height = y * 20;
