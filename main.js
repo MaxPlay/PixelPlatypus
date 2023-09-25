@@ -486,6 +486,7 @@ class PaintTool extends Tool {
         this.canvasContext = this.canvas.getContext("2d", { alpha: false });
         this.resizeWindow = new PaintToolResizeWindow(this.identifier);
         this.toolbar = Find("paint-tool-toolbar");
+        this.dataDisplay = Find("paint-tool-data");
         this.brush = {
             tool: "paint",
             color: 0,
@@ -518,13 +519,15 @@ class PaintTool extends Tool {
         this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', () => setBrushData("size", 4), "brushsize");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "resize", '<svg width="20" height="20"><rect stroke-width="0" height="17.625" width="18" y="1.1875" x="1" stroke="#000" fill="#000000"/><rect transform="rotate(45, 10, 10)" height="18" width="18" y="1" x="1" stroke-width="0" stroke="#000" fill="#ffffff"/><rect transform="rotate(45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/><rect transform="rotate(-45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/></svg>', this.showResize);
-        this.addButton(this.toolbar, "save", '<svg width="20" height="20"><rect height="16" width="16" y="2" x="2.0625" stroke="#000" fill="#000000"/><rect stroke-width="0" height="6" width="12" y="10" x="4" stroke="#000" fill="#ffffff"/><rect stroke-width="0" transform="rotate(-45, 18.5, 2)" height="6" width="3" y="-1" x="17" stroke="#000" fill="#ffffff"/><rect height="4" width="8" y="2" x="5" stroke="#ffffff" fill="#ffffff"/><rect height="3" width="2" y="2" x="10" stroke="#000000" fill="#000000"/></svg>', this.showSaveData);
 
         AddEvent(this.canvas, "mousedown", this.canvasMouseDown);
         AddEvent(this.canvas, "mousemove", this.canvasMouseMove);
         AddEvent(this.canvas, "mouseup", this.canvasMouseUp);
 
+        AddEvent(Find("paint-tool-copy-data"), "click", this.copyData);
+
         this.refreshMode();
+        this.repaint();
     }
 
     showResize() {
@@ -588,7 +591,6 @@ class PaintTool extends Tool {
                 if (newCoordinate.x < me.size.x && newCoordinate.x >= 0 && newCoordinate.y < me.size.y && newCoordinate.y >= 0) {
                     let value = oldData[oldX + oldY * oldSize.x];
                     me.imageData[newCoordinate.x + newCoordinate.y * me.size.x] = value;
-                    me.repaint();
                 }
             }
         }
@@ -596,8 +598,46 @@ class PaintTool extends Tool {
         me.repaint();
     }
 
-    showSaveData() {
+    refreshData() {
+        let me = Game.tools.byId["paint-tool"];
+        let output = [];
+        output.push(me.size.x);
+        output.push(me.size.y);
+        let lastColor = -1;
+        let count = 0;
+        me.imageData.forEach(data => {
+            if (lastColor === -1) {
+                lastColor = data;
+                count = 1;
+                return;
+            }
 
+            if (lastColor != data) {
+                output.push(lastColor);
+                output.push(count);
+                lastColor = data;
+                count = 1;
+                return;
+            }
+
+            ++count;
+        });
+        output.push(lastColor);
+        output.push(count);
+
+        me.dataDisplay.value = JSON.stringify(output);
+    }
+
+    copyData() {
+        let me = Game.tools.byId["paint-tool"];
+        let copyButton = Find("paint-tool-copy-data");
+        navigator.clipboard.writeText(me.dataDisplay.value).then(function() {
+            let oldContent = copyButton.innerHTML;
+            copyButton.innerHTML = "Copied!";
+            setTimeout(function() { copyButton.innerHTML = oldContent; }, 1000)
+        }, function(err) {
+          console.error('Async: Could not copy text: ', err);
+        });
     }
 
     canvasMouseDown(event) {
@@ -687,6 +727,8 @@ class PaintTool extends Tool {
             me.canvasContext.fillStyle = Game.colors.getColor(pixel);
             me.canvasContext.fillRect(x * 20, y * 20, 20, 20);
         });
+
+        me.refreshData();
     }
 
     refreshMode() {
