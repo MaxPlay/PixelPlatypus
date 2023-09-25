@@ -855,6 +855,7 @@ Game.run = function (params) {
     if (toolbar) {
         if (params.has("withtools")) {
             Game.toolbar = toolbar;
+            toolbar.style.visibility = "visible";
             new DebugConsole();
             new PaintTool();
         }
