@@ -49,8 +49,8 @@ Game.colors.getColor = function (type) {
 }
 
 Game.sprites = {
-    test: [20, 20, 0, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
-    test2: [20, 20, 1, 5, 10, 8, 2, 10, 2, 5, 1, 14, 1, 3, 1, 16, 1, 2, 1, 16, 1, 1, 1, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 6, 1, 4, 1, 6, 2, 18, 2, 18, 2, 18, 2, 4, 1, 8, 1, 4, 2, 5, 1, 6, 1, 5, 2, 6, 6, 6, 2, 18, 1, 1, 1, 16, 1, 2, 1, 16, 1, 3, 1, 14, 1, 5, 2, 10, 2, 8, 10, 5],
+    test: [20, 20, 3, 5, 1, 10, 3, 8, 1, 2, 0, 10, 1, 2, 3, 5, 1, 1, 0, 14, 1, 1, 3, 3, 1, 1, 0, 16, 1, 1, 3, 2, 1, 1, 0, 16, 1, 1, 3, 1, 1, 1, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 4, 1, 1, 0, 8, 1, 1, 0, 4, 1, 2, 0, 5, 1, 1, 0, 6, 1, 1, 0, 5, 1, 2, 0, 6, 1, 6, 0, 6, 1, 1, 3, 1, 1, 1, 0, 16, 1, 1, 3, 2, 1, 1, 0, 16, 1, 1, 3, 3, 1, 1, 0, 14, 1, 1, 3, 5, 1, 2, 0, 10, 1, 2, 3, 8, 1, 10, 3, 5],
+    test2: [20, 20, 3, 5, 0, 10, 3, 8, 0, 2, 1, 10, 0, 2, 3, 5, 0, 1, 1, 14, 0, 1, 3, 3, 0, 1, 1, 16, 0, 1, 3, 2, 0, 1, 1, 16, 0, 1, 3, 1, 0, 1, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 4, 0, 1, 1, 8, 0, 1, 1, 4, 0, 2, 1, 5, 0, 1, 1, 6, 0, 1, 1, 5, 0, 2, 1, 6, 0, 6, 1, 6, 0, 1, 3, 1, 0, 1, 1, 16, 0, 1, 3, 2, 0, 1, 1, 16, 0, 1, 3, 3, 0, 1, 1, 14, 0, 1, 3, 5, 0, 2, 1, 10, 0, 2, 3, 8, 0, 10, 3, 5],
 };
 
 Game.animations = {
@@ -72,6 +72,9 @@ Vector2 = function (x, y) {
     this.add = function (other) {
         this.x += other.x;
         this.y += other.y;
+    }
+    this.area = function () {
+        return this.x * this.y;
     }
 }
 
@@ -212,18 +215,23 @@ Game.draw = function () {
 
     Game.spriteBatch.data.forEach(element => {
         if (element.data.length > 2) {
-            let isBlack = !!element.data[2];
             let spriteSize = element.location;
             let pixelIndex = 0;
-            for (let i = 3; i < element.data.length; i++) {
-                context.fillStyle = isBlack ? Game.colors.black : Game.colors.white;
-                for (let j = 0; j < element.data[i]; j++) {
-                    let x = pixelIndex % spriteSize.w;
-                    let y = Math.floor(pixelIndex / spriteSize.w);
-                    context.fillRect((x + spriteSize.x) * pixelSize.x, (y + spriteSize.y) * pixelSize.y, pixelSize.x, pixelSize.y);
-                    pixelIndex++;
+            for (let i = 2; i < element.data.length; i += 2) {
+                let color = element.data[i];
+                let amount = element.data[i + 1];
+                if (color !== 2) {
+                    context.fillStyle = Game.colors.getColor(color);
+                    for (let j = 0; j < amount; j++) {
+                        let x = pixelIndex % spriteSize.w;
+                        let y = Math.floor(pixelIndex / spriteSize.w);
+                        context.fillRect((x + spriteSize.x) * pixelSize.x, (y + spriteSize.y) * pixelSize.y, pixelSize.x, pixelSize.y);
+                        pixelIndex++;
+                    }
                 }
-                isBlack = !isBlack;
+                else {
+                    pixelIndex += amount;
+                }
             }
         }
     });
@@ -236,94 +244,6 @@ Game.draw = function () {
 /// Debugging
 
 Game.debugMode = false;
-Game.debugConsole = null;
-
-Game.showDebugConsole = function () {
-    if (!Game.debugConsole) {
-        let debugConsole = document.createElement("div");
-        debugConsole.id = "debugconsole";
-        debugConsole.style.position = "absolute";
-        debugConsole.style.top = 0;
-        debugConsole.style.border = "1px solid black";
-        debugConsole.style.margin = "10px";
-        debugConsole.style.padding = "30px 10px 10px 10px";
-        debugConsole.style.background = "#ffae0080";
-        Game.debugConsole = debugConsole;
-
-        {
-            let heading = document.createElement("div");
-            heading.innerText = "Debugging";
-            heading.style.position = "absolute";
-            heading.style.top = "2px";
-            heading.style.left = "2px";
-            heading.style.fontSize = 14;
-            heading.style.fontFamily = "sans-serif";
-            debugConsole.appendChild(heading);
-
-            let closeButton = document.createElement("button");
-            closeButton.innerText = "X";
-            closeButton.style.position = "absolute";
-            closeButton.style.right = 0;
-            closeButton.style.top = 0;
-            AddEvent(closeButton, "click", Game.hideDebugConsole);
-            debugConsole.appendChild(closeButton);
-        }
-
-        debugConsole.addContainer = function () {
-            let container = document.createElement("div");
-            debugConsole.appendChild(container);
-            debugConsole.lastContainer = container;
-        }
-
-        // Add default container
-        debugConsole.addContainer();
-
-        debugConsole.addSpace = function (amount) {
-            debugConsole.lastContainer.style.marginBottom = amount + "px";
-            debugConsole.addContainer();
-        }
-
-        debugConsole.addButton = function (text, callback, inline) {
-            let button = document.createElement("button");
-            button.innerText = text;
-            button.style.margin = "4px 2px";
-            AddEvent(button, "click", callback);
-            if (!inline) {
-                debugConsole.addContainer();
-            }
-            debugConsole.lastContainer.appendChild(button);
-        }
-
-        debugConsole.addHeading = function (text) {
-            let heading = document.createElement("div");
-            heading.innerText = text;
-            heading.style.fontSize = 16;
-            heading.style.fontWeight = "bold";
-            heading.style.fontFamily = "sans-serif";
-            debugConsole.lastContainer.appendChild(heading);
-        }
-
-        debugConsole.addHeading("Frame Test");
-        debugConsole.addButton("white", function () { Game.setSprite("test"); }, false);
-        debugConsole.addButton("black", function () { Game.setSprite("test2"); }, true);
-        debugConsole.addSpace(10);
-        debugConsole.addHeading("Animation Test");
-        debugConsole.addButton("start", function () { Game.startAnimation("test"); }, false);
-        debugConsole.addButton("stop", function () { Game.stopAnimation(); }, true);
-
-        Game.debugMode = true;
-
-        Game.body.appendChild(debugConsole);
-    }
-}
-
-Game.hideDebugConsole = function () {
-    if (Game.debugConsole) {
-        Game.debugConsole.remove();
-        Game.debugMode = false;
-        Game.debugConsole = null;
-    }
-}
 
 class Tool {
 
@@ -333,6 +253,10 @@ class Tool {
         this.buttonGroups = {}
 
         Game.tools.add(this);
+    }
+
+    getCustomShowLogic() {
+        return undefined;
     }
 
     init() { }
@@ -390,7 +314,7 @@ Game.tools.add = function (tool) {
         button.style.display = "block";
         Game.toolbar.appendChild(button);
 
-        AddEvent(Find(button.id), "click", function () { Find(tool.identifier + "-container").style.visibility = "visible"; });
+        AddEvent(Find(button.id), "click", function () { if (tool.getCustomShowLogic() !== undefined) { tool.getCustomShowLogic()(); } else { Find(tool.identifier + "-container").style.visibility = "visible"; } });
         Game.tools.collection.push(tool);
         Game.tools.byId[tool.identifier] = tool;
         if (this.initialized)
@@ -407,6 +331,109 @@ Game.tools.init = function () {
     });
 
     this.initialized = true;
+}
+
+class DebugConsole extends Tool {
+    constructor() {
+        super("Debug Console", "debugconsole");
+        this.instance = null;
+    }
+
+    getCustomShowLogic() {
+        return this.show;
+    }
+
+    init() {
+    }
+
+    show() {
+        let me = Game.tools.byId["debugconsole"];
+        if (me.instance === null) {
+            let debugConsole = document.createElement("div");
+            debugConsole.id = "debugconsole";
+            debugConsole.style.position = "absolute";
+            debugConsole.style.top = 0;
+            debugConsole.style.border = "1px solid black";
+            debugConsole.style.margin = "10px";
+            debugConsole.style.padding = "30px 10px 10px 10px";
+            debugConsole.style.background = "#ffae0080";
+            me.instance = debugConsole;
+
+            {
+                let heading = document.createElement("div");
+                heading.innerText = "Debugging";
+                heading.style.position = "absolute";
+                heading.style.top = "2px";
+                heading.style.left = "2px";
+                heading.style.fontSize = 14;
+                heading.style.fontFamily = "sans-serif";
+                debugConsole.appendChild(heading);
+
+                let closeButton = document.createElement("button");
+                closeButton.innerText = "X";
+                closeButton.style.position = "absolute";
+                closeButton.style.right = 0;
+                closeButton.style.top = 0;
+                AddEvent(closeButton, "click", me.hide);
+                debugConsole.appendChild(closeButton);
+            }
+
+            debugConsole.addContainer = function () {
+                let container = document.createElement("div");
+                debugConsole.appendChild(container);
+                debugConsole.lastContainer = container;
+            }
+
+            // Add default container
+            debugConsole.addContainer();
+
+            debugConsole.addSpace = function (amount) {
+                debugConsole.lastContainer.style.marginBottom = amount + "px";
+                debugConsole.addContainer();
+            }
+
+            debugConsole.addButton = function (text, callback, inline) {
+                let button = document.createElement("button");
+                button.innerText = text;
+                button.style.margin = "4px 2px";
+                AddEvent(button, "click", callback);
+                if (!inline) {
+                    debugConsole.addContainer();
+                }
+                debugConsole.lastContainer.appendChild(button);
+            }
+
+            debugConsole.addHeading = function (text) {
+                let heading = document.createElement("div");
+                heading.innerText = text;
+                heading.style.fontSize = 16;
+                heading.style.fontWeight = "bold";
+                heading.style.fontFamily = "sans-serif";
+                debugConsole.lastContainer.appendChild(heading);
+            }
+
+            debugConsole.addHeading("Frame Test");
+            debugConsole.addButton("white", function () { Game.setSprite("test"); }, false);
+            debugConsole.addButton("black", function () { Game.setSprite("test2"); }, true);
+            debugConsole.addSpace(10);
+            debugConsole.addHeading("Animation Test");
+            debugConsole.addButton("start", function () { Game.startAnimation("test"); }, false);
+            debugConsole.addButton("stop", function () { Game.stopAnimation(); }, true);
+
+            Game.debugMode = true;
+
+            Game.body.appendChild(debugConsole);
+        }
+    }
+
+    hide() {
+        let me = Game.tools.byId["debugconsole"];
+        if (me.instance !== null) {
+            me.instance.remove();
+            Game.debugMode = false;
+            me.instance = null;
+        }
+    };
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -525,6 +552,7 @@ class PaintTool extends Tool {
         AddEvent(this.canvas, "mouseup", this.canvasMouseUp);
 
         AddEvent(Find("paint-tool-copy-data"), "click", this.copyData);
+        AddEvent(Find("paint-tool-paste-data"), "click", this.pasteData);
 
         this.refreshMode();
         this.repaint();
@@ -629,15 +657,80 @@ class PaintTool extends Tool {
     }
 
     copyData() {
+        if (navigator.clipboard.writeText === undefined) {
+            window.alert("Writing to the clipboard is not enabled in your browser. You have to specifically give permission to do that.");
+            return;
+        }
+
         let me = Game.tools.byId["paint-tool"];
         let copyButton = Find("paint-tool-copy-data");
-        navigator.clipboard.writeText(me.dataDisplay.value).then(function() {
+        navigator.clipboard.writeText(me.dataDisplay.value).then(function () {
             let oldContent = copyButton.innerHTML;
             copyButton.innerHTML = "Copied!";
-            setTimeout(function() { copyButton.innerHTML = oldContent; }, 1000)
-        }, function(err) {
-          console.error('Async: Could not copy text: ', err);
+            setTimeout(function () { copyButton.innerHTML = oldContent; }, 1000)
+        }, function (err) {
+            console.error('Async: Could not copy text: ', err);
         });
+    }
+
+    pasteData() {
+        if (navigator.clipboard.readText === undefined) {
+            window.alert("Reading from the clipboard is not enabled in your browser. You have to specifically give permission to do that.");
+            return;
+        }
+
+        let me = Game.tools.byId["paint-tool"];
+        navigator.clipboard.readText().then((text) => {
+            let data = JSON.parse(text);
+            if (Array.isArray(data)) {
+                me.loadData(data);
+            }
+            else {
+                console.error('Paste data is not an array');
+            }
+        }, function (err) {
+            console.error('Async: Could not paste text: ', err);
+        });
+    }
+
+    loadData(data) {
+        if (data.length < 4) {
+            console.error('Not enough data to load.');
+            return;
+        }
+
+        if ((data.length % 2) !== 0) {
+            console.error('The amount of data must be an even number.');
+            return;
+        }
+
+        if (!data.every(a => Number.isInteger(a))) {
+            console.error('Not all elements in the data set is an image');
+            return;
+        }
+
+        this.size.x = data[0];
+        this.size.y = data[1];
+
+        this.canvas.width = this.size.x * 20;
+        this.canvas.height = this.size.y * 20;
+
+        this.imageData = [];
+        for (let i = 0; i < this.size.area(); i++) {
+            this.imageData.push(2);
+        }
+
+        let currentIndex = 0;
+        for (let i = 2; i < data.length; i += 2) {
+            const color = data[i];
+            const count = data[i + 1];
+            for (let j = 0; j < count; j++) {
+                this.imageData[currentIndex] = color;
+                ++currentIndex;
+            }
+        }
+
+        this.repaint();
     }
 
     canvasMouseDown(event) {
@@ -760,6 +853,7 @@ Game.run = function (params) {
     if (toolbar) {
         if (params.has("withtools")) {
             Game.toolbar = toolbar;
+            new DebugConsole();
             new PaintTool();
         }
         else {
