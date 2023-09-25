@@ -424,7 +424,7 @@ class PaintToolResizeWindow {
             let index = 0;
             ["up-left", "up", "up-right", "center-left", "center", "center-right", "down-left", "down", "down-right"].forEach(element => {
                 let button = Find("paint-tool-resize-" + element);
-                AddEvent(button, "click", () => me.setDirection(index));
+                AddEvent(button, "click", () => me.setDirection(button));
                 resizeButtons.push(button);
                 ++index;
             });
@@ -434,7 +434,7 @@ class PaintToolResizeWindow {
         AddEvent(this.applyButton, "click", this.apply);
         this.size = new Vector2(1, 1);
         this.oldSize = this.size;
-        this.direction = -1;
+        this.direction = 4;
     }
 
     show(currentSize) {
@@ -443,21 +443,39 @@ class PaintToolResizeWindow {
         this.xInput.value = this.size.x;
         this.yInput.value = this.size.y;
         this.window.style.visibility = "inherit";
-        this.setDirection(this.direction);
+        this.setDirection(this.buttons[this.direction]);
     }
 
-    setDirection(index) {
+    setDirection(button) {
         let me = Game.tools.byId["paint-tool"].resizeWindow;
-        me.direction = index;
-        // TODO: give the buttons a functionality
+        me.direction = me.buttons.indexOf(button);
+        const icons = { "-1-1": "↖", "0-1": "⬆", "1-1": "↗", "-10": "⬅", "00": "•", "10": "➡", "-11": "↙", "01": "⬇", "11": "↘" };
+
+        let centerX = Math.floor(me.direction % 3);
+        let centerY = Math.floor(me.direction / 3);
+        for (let i = 0; i < me.buttons.length; i++) {
+            const button = me.buttons[i];
+            let x = Math.floor(i % 3) - centerX;
+            let y = Math.floor(i / 3) - centerY;
+            if (Math.abs(x) < 2 && Math.abs(y) < 2) {
+                let identifier = x + "" + y;
+                button.innerHTML = icons[identifier];
+            }
+            else {
+                button.innerHTML = "";
+            }
+        }
     }
 
     apply() {
         let paintTool = Game.tools.byId["paint-tool"];
         let me = paintTool.resizeWindow;
-        paintTool.changeSize(me.size, me.direction);
-
         me.window.style.visibility = "collapse";
+
+        const x = Math.max(1, Math.min(40, Number(me.xInput.value)));
+        const y = Math.max(1, Math.min(40, Number(me.yInput.value)));
+        me.size = new Vector2(x, y);
+        paintTool.changeSize(me.size, me.direction);
     }
 };
 
@@ -516,10 +534,46 @@ class PaintTool extends Tool {
     changeSize(size, direction) {
         let me = Game.tools.byId["paint-tool"];
         let oldSize = me.size;
+        let oldData = Array.from(me.imageData);
+
         me.size = size;
+        let difference = new Vector2(me.size.x - oldSize.x, me.size.y - oldSize.y);
 
         let x = size.x;
         let y = size.y;
+
+        let padding = new Vector2(0, 0);
+        switch (direction) {
+            case 1:
+                padding.x = Math.round(difference.x / 2);
+                break;
+            case 2:
+                padding.x = difference.x;
+                break;
+            case 3:
+                padding.y = Math.round(difference.y / 2);
+                break;
+            case 4:
+                padding.x = Math.round(difference.x / 2);
+                padding.y = Math.round(difference.y / 2);
+                break;
+            case 5:
+                padding.x = difference.x;
+                padding.y = Math.round(difference.y / 2);
+                break;
+            case 6:
+                padding.y = difference.y;
+                break;
+            case 7:
+                padding.x = Math.round(difference.x / 2);
+                padding.y = difference.y;
+                break;
+            case 8:
+                padding.x = difference.x;
+                padding.y = difference.y;
+                break;
+        }
+
 
         me.canvas.width = x * 20;
         me.canvas.height = y * 20;
@@ -527,6 +581,17 @@ class PaintTool extends Tool {
         for (let i = 0; i < x * y; i++) {
             me.imageData.push(2);
         }
+        for (let oldY = 0; oldY < oldSize.y; oldY++) {
+            for (let oldX = 0; oldX < oldSize.x; oldX++) {
+                let newCoordinate = new Vector2(oldX + padding.x, oldY + padding.y);
+                if (newCoordinate.x < me.size.x && newCoordinate.x >= 0 && newCoordinate.y < me.size.y && newCoordinate.y >= 0) {
+                    let value = oldData[oldX + oldY * oldSize.x];
+                    me.imageData[newCoordinate.x + newCoordinate.y * me.size.x] = value;
+                    me.repaint();
+                }
+            }
+        }
+
         me.repaint();
     }
 
