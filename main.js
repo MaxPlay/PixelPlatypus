@@ -41,16 +41,16 @@ var Game = {}
 Game.colors = { black: "rgb(0,0,0)", white: "rgb(255,255,255)", transparent: "rgba(0,0,0,0)" }
 Game.colors.getColor = function (type) {
     switch (type) {
-        case 0: return Game.colors.white;
-        case 1: return Game.colors.black;
-        case 2: return Game.colors.transparent;
+        case 0: return Game.colors.transparent;
+        case 1: return Game.colors.white;
+        case 2: return Game.colors.black;
         default: return Game.colors.transparent;
     }
 }
 
 Game.sprites = {
-    test: [20, 20, 3, 5, 1, 10, 3, 8, 1, 2, 0, 10, 1, 2, 3, 5, 1, 1, 0, 14, 1, 1, 3, 3, 1, 1, 0, 16, 1, 1, 3, 2, 1, 1, 0, 16, 1, 1, 3, 1, 1, 1, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 6, 1, 1, 0, 4, 1, 1, 0, 6, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 18, 1, 2, 0, 4, 1, 1, 0, 8, 1, 1, 0, 4, 1, 2, 0, 5, 1, 1, 0, 6, 1, 1, 0, 5, 1, 2, 0, 6, 1, 6, 0, 6, 1, 1, 3, 1, 1, 1, 0, 16, 1, 1, 3, 2, 1, 1, 0, 16, 1, 1, 3, 3, 1, 1, 0, 14, 1, 1, 3, 5, 1, 2, 0, 10, 1, 2, 3, 8, 1, 10, 3, 5],
-    test2: [20, 20, 3, 5, 0, 10, 3, 8, 0, 2, 1, 10, 0, 2, 3, 5, 0, 1, 1, 14, 0, 1, 3, 3, 0, 1, 1, 16, 0, 1, 3, 2, 0, 1, 1, 16, 0, 1, 3, 1, 0, 1, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 6, 0, 1, 1, 4, 0, 1, 1, 6, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 18, 0, 2, 1, 4, 0, 1, 1, 8, 0, 1, 1, 4, 0, 2, 1, 5, 0, 1, 1, 6, 0, 1, 1, 5, 0, 2, 1, 6, 0, 6, 1, 6, 0, 1, 3, 1, 0, 1, 1, 16, 0, 1, 3, 2, 0, 1, 1, 16, 0, 1, 3, 3, 0, 1, 1, 14, 0, 1, 3, 5, 0, 2, 1, 10, 0, 2, 3, 8, 0, 10, 3, 5],
+    test: [20, 20, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
+    test2: [20, 20, 0, 5, 1, 10, 0, 8, 1, 2, 2, 10, 1, 2, 0, 5, 1, 1, 2, 14, 1, 1, 0, 3, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 1, 1, 1, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 3, 1, 1, 2, 10, 1, 1, 2, 3, 1, 2, 2, 4, 1, 1, 2, 8, 1, 1, 2, 4, 1, 2, 2, 5, 1, 8, 2, 5, 1, 1, 0, 1, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 3, 1, 1, 2, 14, 1, 1, 0, 5, 1, 2, 2, 10, 1, 2, 0, 8, 1, 10, 0, 5],
 };
 
 Game.animations = {
@@ -220,7 +220,7 @@ Game.draw = function () {
             for (let i = 2; i < element.data.length; i += 2) {
                 let color = element.data[i];
                 let amount = element.data[i + 1];
-                if (color !== 2) {
+                if (color > 0) {
                     context.fillStyle = Game.colors.getColor(color);
                     for (let j = 0; j < amount; j++) {
                         let x = pixelIndex % spriteSize.w;
@@ -516,7 +516,7 @@ class PaintTool extends Tool {
         this.dataDisplay = Find("paint-tool-data");
         this.brush = {
             tool: "paint",
-            color: 0,
+            color: 1,
             size: 1
         }
         this.imageData = [];
@@ -533,8 +533,8 @@ class PaintTool extends Tool {
             me.refreshMode();
         }
 
-        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', () => setBrushData("color", 0), "color");
-        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', () => setBrushData("color", 1), "color");
+        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', () => setBrushData("color", 1), "color");
+        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', () => setBrushData("color", 2), "color");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "paint", '<svg width="20" height="20"><rect height="2.68748" width="3.06248" y="14.96872" x="14.12497" stroke="#000" fill="#000000"/><rect transform="rotate(-41.2257, 10.1057, 9.9232)" height="15.93494" width="4.43747" y="1.95573" x="7.88692" stroke="#000" fill="#ffffff"/><rect rx="1" transform="rotate(-41.2257, 4.36706, 3.37399)" height="2.05906" width="4.43747" y="2.34446" x="2.14833" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "paint"), "tool");
         this.addButton(this.toolbar, "fill", '<svg width="20" height="20"><ellipse transform="rotate(14.1157, 14.7187, 8.87501)" ry="1.34374" rx="3.09373" cy="8.87501" cx="14.71872" stroke="#000" fill="#000000"/><rect transform="rotate(42.8183, 9.03079, 11.9955)" height="11.06243" width="8.53023" y="6.46431" x="4.76568" stroke="#000" fill="#fff"/><line y2="9.34376" x2="10.0625" y1="3.46879" x1="5.56253" stroke="#000" fill="none"/><ellipse ry="1.90624" rx="0.96874" cy="10.93749" cx="17.15621" stroke="#000" fill="#000000"/><ellipse ry="2.71873" rx="0.75" cy="12.68748" cx="17.43745" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "fill"), "tool");
@@ -609,10 +609,8 @@ class PaintTool extends Tool {
 
         me.canvas.width = x * 20;
         me.canvas.height = y * 20;
-        me.imageData = [];
-        for (let i = 0; i < x * y; i++) {
-            me.imageData.push(2);
-        }
+        this.resetImage();
+
         for (let oldY = 0; oldY < oldSize.y; oldY++) {
             for (let oldX = 0; oldX < oldSize.x; oldX++) {
                 let newCoordinate = new Vector2(oldX + padding.x, oldY + padding.y);
@@ -715,10 +713,7 @@ class PaintTool extends Tool {
         this.canvas.width = this.size.x * 20;
         this.canvas.height = this.size.y * 20;
 
-        this.imageData = [];
-        for (let i = 0; i < this.size.area(); i++) {
-            this.imageData.push(2);
-        }
+        this.resetImage();
 
         let currentIndex = 0;
         for (let i = 2; i < data.length; i += 2) {
@@ -731,6 +726,13 @@ class PaintTool extends Tool {
         }
 
         this.repaint();
+    }
+
+    resetImage() {
+        this.imageData = [];
+        for (let i = 0; i < this.size.area(); i++) {
+            this.imageData.push(0);
+        }
     }
 
     canvasMouseDown(event) {
@@ -762,7 +764,7 @@ class PaintTool extends Tool {
 
         let selectedColor = me.brush.color;
         if (me.brush.tool === "erase")
-            selectedColor = 3;
+            selectedColor = 0;
 
         let previousColor = me.imageData[x + y * me.size.x];
         if (me.brush.tool === "fill" && previousColor !== selectedColor) {
@@ -826,8 +828,8 @@ class PaintTool extends Tool {
 
     refreshMode() {
         const colorLookup = {
-            0: "white",
-            1: "black"
+            1: "white",
+            2: "black"
         };
         const brushSizeLookup = {
             1: "brushsize-1",
