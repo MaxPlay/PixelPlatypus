@@ -51,6 +51,7 @@ Game.colors.getColor = function (type) {
 Game.sprites = {
     test: [20, 20, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
     test2: [20, 20, 0, 5, 1, 10, 0, 8, 1, 2, 2, 10, 1, 2, 0, 5, 1, 1, 2, 14, 1, 1, 0, 3, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 1, 1, 1, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 3, 1, 1, 2, 10, 1, 1, 2, 3, 1, 2, 2, 4, 1, 1, 2, 8, 1, 1, 2, 4, 1, 2, 2, 5, 1, 8, 2, 5, 1, 1, 0, 1, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 3, 1, 1, 2, 14, 1, 1, 0, 5, 1, 2, 2, 10, 1, 2, 0, 8, 1, 10, 0, 5],
+    idle: [20,14,0,6,1,2,2,4,1,2,0,11,1,1,2,2,1,3,2,1,1,1,2,1,1,1,0,10,1,2,2,1,1,3,2,1,1,3,0,11,2,2,1,4,2,3,0,9,2,6,1,4,2,2,0,5,2,4,1,5,2,1,1,4,2,1,0,4,2,1,1,9,2,1,1,4,2,1,0,4,2,1,1,8,2,3,1,1,2,2,0,6,2,8,1,3,2,1,1,1,2,1,0,9,2,2,1,8,2,3,0,6,2,2,1,1,2,1,1,8,2,1,1,1,2,1,0,4,2,2,1,1,2,1,1,9,2,1,1,2,2,1,0,3,2,1,1,2,2,1,1,9,2,1,1,2,2,1,0,3,2,1,1,2,2,1,1,9,2,1,1,2,2,1,0,1],
 };
 
 Game.animations = {
@@ -90,6 +91,10 @@ Sprite = function (data, position) {
     this.data = data;
 }
 
+Game.character = {
+    
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Input
 
@@ -119,10 +124,11 @@ Game.init = function () {
 
 Game.loop = function () {
     Game.processInput();
-    Game.animate();
+    // TODO process animations here: Game.animate();
     Game.ticks++;
 
     Game.spriteBatch.add("test", new Vector2(2, 0));
+    Game.spriteBatch.add("test", new Vector2(6, 6));
 
     setTimeout(Game.loop, 1000 / Game.fps);
 }
@@ -131,13 +137,6 @@ Game.loop = function () {
 /// Rendering
 
 Game.screenSize = new Vector2(32, 16);
-
-Game.currentSprite = {
-    wasDrawn: false,
-    name: "",
-    data: [],
-    location: new Rect(0, 0, 0, 0)
-}
 
 Game.spriteBatch = {
     data: []
@@ -153,55 +152,9 @@ Game.spriteBatch.clear = function () {
     this.data = [];
 }
 
-Game.currentAnimation = {
-    name: "",
-    data: {},
-    currentFrame: 0,
-    isRunning: false,
-    isSet: false,
-    position: new Vector2(0, 0)
-}
-
 Game.clearFrame = function () {
     Game.canvasContext.fillStyle = Game.colors.white;
     Game.canvasContext.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
-}
-
-Game.setSprite = function (name, position = new Vector2(0, 0)) {
-    if (Game.sprites[name] && Game.currentSprite.name !== name) {
-        Game.currentSprite.name = name;
-        Game.currentSprite.data = Game.sprites[name];
-        Game.currentSprite.wasDrawn = false;
-        Game.currentSprite.location = new Rect(position.x, position.y, Game.currentSprite.data[0], Game.currentSprite.data[1]);
-    }
-}
-
-Game.startAnimation = function (name, position = new Vector2(0, 0)) {
-    if (Game.animations[name] && (Game.currentAnimation.name !== name || !Game.currentAnimation.isSet)) {
-        Game.currentAnimation.name = name;
-        Game.currentAnimation.data = Game.animations[name];
-        Game.currentAnimation.currentFrame = 0;
-        Game.currentAnimation.isRunning = true;
-        Game.currentAnimation.isSet = true;
-        Game.currentAnimation.position = position;
-        Game.setSprite(Game.currentAnimation.data[0], position);
-    }
-}
-
-Game.stopAnimation = function () {
-    Game.currentAnimation.isRunning = false;
-    Game.currentAnimation.isSet = false;
-}
-
-Game.animate = function () {
-    if (Game.currentAnimation.isSet && Game.currentAnimation.isRunning) {
-        Game.currentAnimation.currentFrame++;
-        if (Game.currentAnimation.data.duration === Game.currentAnimation.currentFrame)
-            Game.currentAnimation.currentFrame = 0;
-
-        if (Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame])
-            Game.setSprite(Game.currentAnimation.data.frames[Game.currentAnimation.currentFrame], Game.currentAnimation.position);
-    }
 }
 
 Game.draw = function () {
@@ -412,13 +365,7 @@ class DebugConsole extends Tool {
                 debugConsole.lastContainer.appendChild(heading);
             }
 
-            debugConsole.addHeading("Frame Test");
-            debugConsole.addButton("white", function () { Game.setSprite("test"); }, false);
-            debugConsole.addButton("black", function () { Game.setSprite("test2"); }, true);
-            debugConsole.addSpace(10);
-            debugConsole.addHeading("Animation Test");
-            debugConsole.addButton("start", function () { Game.startAnimation("test"); }, false);
-            debugConsole.addButton("stop", function () { Game.stopAnimation(); }, true);
+            // TODO: Fill debug console here
 
             Game.debugMode = true;
 
