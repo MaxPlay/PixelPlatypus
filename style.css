@@ -10,8 +10,30 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     height: 100%;
     width: 100%;
+}
+
+#canvas-buttons {
+    margin: 20px;
+}
+
+#canvas-buttons button {
+    width: 150px;
+    height: 50px;
+    font-size: larger;
+    font-family: sans-serif;
+    border: solid #000 6px;
+    background-color: #ddd;
+}
+
+#canvas-buttons button:hover {
+    background-color: #fff;
+}
+
+#canvas-buttons button:active {
+    background-color: #aaa;
 }
 
 #paint-tool-container {
@@ -78,7 +100,7 @@ body {
     color: #fff;
 }
 
-#paint-tool-resize header{
+#paint-tool-resize header {
     font-weight: bold;
     font-size: large;
 }

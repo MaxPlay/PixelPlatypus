@@ -51,7 +51,7 @@ Game.colors.getColor = function (type) {
 Game.sprites = {
     test: [20, 20, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
     test2: [20, 20, 0, 5, 1, 10, 0, 8, 1, 2, 2, 10, 1, 2, 0, 5, 1, 1, 2, 14, 1, 1, 0, 3, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 1, 1, 1, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 3, 1, 1, 2, 10, 1, 1, 2, 3, 1, 2, 2, 4, 1, 1, 2, 8, 1, 1, 2, 4, 1, 2, 2, 5, 1, 8, 2, 5, 1, 1, 0, 1, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 3, 1, 1, 2, 14, 1, 1, 0, 5, 1, 2, 2, 10, 1, 2, 0, 8, 1, 10, 0, 5],
-    idle: [20,14,0,6,1,2,2,4,1,2,0,11,1,1,2,2,1,3,2,1,1,1,2,1,1,1,0,10,1,2,2,1,1,3,2,1,1,3,0,11,2,2,1,4,2,3,0,9,2,6,1,4,2,2,0,5,2,4,1,5,2,1,1,4,2,1,0,4,2,1,1,9,2,1,1,4,2,1,0,4,2,1,1,8,2,3,1,1,2,2,0,6,2,8,1,3,2,1,1,1,2,1,0,9,2,2,1,8,2,3,0,6,2,2,1,1,2,1,1,8,2,1,1,1,2,1,0,4,2,2,1,1,2,1,1,9,2,1,1,2,2,1,0,3,2,1,1,2,2,1,1,9,2,1,1,2,2,1,0,3,2,1,1,2,2,1,1,9,2,1,1,2,2,1,0,1],
+    idle: [20, 14, 0, 6, 1, 2, 2, 4, 1, 2, 0, 11, 1, 1, 2, 2, 1, 3, 2, 1, 1, 1, 2, 1, 1, 1, 0, 10, 1, 2, 2, 1, 1, 3, 2, 1, 1, 3, 0, 11, 2, 2, 1, 4, 2, 3, 0, 9, 2, 6, 1, 4, 2, 2, 0, 5, 2, 4, 1, 5, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 9, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 8, 2, 3, 1, 1, 2, 2, 0, 6, 2, 8, 1, 3, 2, 1, 1, 1, 2, 1, 0, 9, 2, 2, 1, 8, 2, 3, 0, 6, 2, 2, 1, 1, 2, 1, 1, 8, 2, 1, 1, 1, 2, 1, 0, 4, 2, 2, 1, 1, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 1],
 };
 
 Game.animations = {
@@ -92,7 +92,7 @@ Sprite = function (data, position) {
 }
 
 Game.character = {
-    
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +114,18 @@ Game.processInput = function () {
     });
 }
 
+Game.onLeftButtonClicked = function () {
+    // TODO: Handle right click
+}
+
+Game.onSelectButtonClicked = function () {
+    // TODO: Handle select click
+}
+
+Game.onRightButtonClicked = function () {
+    // TODO: Handle right click
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Gameplay
 
@@ -126,9 +138,6 @@ Game.loop = function () {
     Game.processInput();
     // TODO process animations here: Game.animate();
     Game.ticks++;
-
-    Game.spriteBatch.add("test", new Vector2(2, 0));
-    Game.spriteBatch.add("test", new Vector2(6, 6));
 
     setTimeout(Game.loop, 1000 / Game.fps);
 }
@@ -493,6 +502,7 @@ class PaintTool extends Tool {
         this.addButton(this.toolbar, "brushsize-4", '<svg width="20" height="20"><rect height="14" width="14" x="3" y="3" fill="#000"></svg>', () => setBrushData("size", 4), "brushsize");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "resize", '<svg width="20" height="20"><rect stroke-width="0" height="17.625" width="18" y="1.1875" x="1" stroke="#000" fill="#000000"/><rect transform="rotate(45, 10, 10)" height="18" width="18" y="1" x="1" stroke-width="0" stroke="#000" fill="#ffffff"/><rect transform="rotate(45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/><rect transform="rotate(-45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/></svg>', this.showResize);
+        this.addButton(this.toolbar, "resize-to-fit", '<svg width="20" height="20"><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="18" x2="6" y1="2" x1="6" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="18" x2="14" y1="2" x1="14" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="6" x2="18" y1="6" x1="2" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="14" x2="18" y1="14" x1="2" stroke="#000" fill="none"/></svg>', this.resizeToFit);
 
         AddEvent(this.canvas, "mousedown", this.canvasMouseDown);
         AddEvent(this.canvas, "mousemove", this.canvasMouseMove);
@@ -508,6 +518,12 @@ class PaintTool extends Tool {
     showResize() {
         let me = Game.tools.byId["paint-tool"];
         me.resizeWindow.show(me.size);
+    }
+
+    resizeToFit() {
+        let me = Game.tools.byId["paint-tool"];
+        let targetRect = new Rect(0, 0, me.size.x, me.size.y);
+        // TODO: Calculate rect and resize
     }
 
     changeSize(size, direction) {
@@ -821,6 +837,10 @@ Game.run = function (params) {
     AddEvent(document, 'visibilitychange', function (e) { Game.isVisible = (document.visibilityState === 'hidden'); });
     AddEvent(document, "keydown", Game.keyDown);
     AddEvent(document, "keyup", Game.keyUp);
+
+    AddEvent(Find("button-left"), "click", Game.onLeftButtonClicked);
+    AddEvent(Find("button-select"), "click", Game.onSelectButtonClicked);
+    AddEvent(Find("button-right"), "click", Game.onRightButtonClicked);
 
     Game.tools.init();
     Game.init();
