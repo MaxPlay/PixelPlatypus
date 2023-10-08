@@ -47,6 +47,11 @@ Game.colors.getColor = function (type) {
         default: return Game.colors.transparent;
     }
 }
+Game.colorTypes = {
+    transparent: 0,
+    white: 1,
+    black: 2
+}
 
 Game.sprites = {
     test: [20, 20, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
@@ -66,24 +71,28 @@ Game.animations = {
     }
 };
 
-Vector2 = function (x, y) {
-    this.x = x;
-    this.y = y;
-
-    this.add = function (other) {
-        this.x += other.x;
-        this.y += other.y;
+class Vector2 {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
     }
-    this.area = function () {
-        return this.x * this.y;
-    }
+    add(other) { return new Vector2(this.x + other.x, this.y + other.y); }
+    subtract(other) { return new Vector2(this.x - other.x, this.y - other.y); }
+    area() { return this.x * this.y; }
+    invert() { return new Vector2(-this.x, -this.y); }
 }
 
-Rect = function (x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+class Rect {
+    constructor(x, y, w, h) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+
+    getPosition() { return new Vector2(this.x, this.y); }
+    getSize() { return new Vector2(this.w, this.h); }
+    getArea() { return new Vector2(this.w - this.x, this.h - this.y).area(); }
 }
 
 Sprite = function (data, position) {
@@ -110,7 +119,7 @@ Game.keyUp = function (event) {
 
 Game.processInput = function () {
     Game.pressedKeys.forEach(key => {
-        console.log(key);
+        // Handle key down
     });
 }
 
@@ -489,8 +498,8 @@ class PaintTool extends Tool {
             me.refreshMode();
         }
 
-        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', () => setBrushData("color", 1), "color");
-        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', () => setBrushData("color", 2), "color");
+        this.addButton(this.toolbar, "white", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#fff" stroke="#888"></rect></svg>', () => setBrushData("color", Game.colorTypes.white), "color");
+        this.addButton(this.toolbar, "black", '<svg width="20" height="20"><rect height="16" width="16" x="2" y="2" fill="#000" stroke="#888"></rect></svg>', () => setBrushData("color", Game.colorTypes.black), "color");
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "paint", '<svg width="20" height="20"><rect height="2.68748" width="3.06248" y="14.96872" x="14.12497" stroke="#000" fill="#000000"/><rect transform="rotate(-41.2257, 10.1057, 9.9232)" height="15.93494" width="4.43747" y="1.95573" x="7.88692" stroke="#000" fill="#ffffff"/><rect rx="1" transform="rotate(-41.2257, 4.36706, 3.37399)" height="2.05906" width="4.43747" y="2.34446" x="2.14833" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "paint"), "tool");
         this.addButton(this.toolbar, "fill", '<svg width="20" height="20"><ellipse transform="rotate(14.1157, 14.7187, 8.87501)" ry="1.34374" rx="3.09373" cy="8.87501" cx="14.71872" stroke="#000" fill="#000000"/><rect transform="rotate(42.8183, 9.03079, 11.9955)" height="11.06243" width="8.53023" y="6.46431" x="4.76568" stroke="#000" fill="#fff"/><line y2="9.34376" x2="10.0625" y1="3.46879" x1="5.56253" stroke="#000" fill="none"/><ellipse ry="1.90624" rx="0.96874" cy="10.93749" cx="17.15621" stroke="#000" fill="#000000"/><ellipse ry="2.71873" rx="0.75" cy="12.68748" cx="17.43745" stroke="#000" fill="#000000"/></svg>', () => setBrushData("tool", "fill"), "tool");
@@ -522,8 +531,22 @@ class PaintTool extends Tool {
 
     resizeToFit() {
         let me = Game.tools.byId["paint-tool"];
-        let targetRect = new Rect(0, 0, me.size.x, me.size.y);
-        // TODO: Calculate rect and resize
+        let targetRect = new Rect(me.size.x, me.size.y, me.size.x, me.size.y);
+        for (let x = 0; x < me.size.x; x++) {
+            for (let y = 0; y < me.size.y; y++) {
+                const value = me.imageData[x + y * me.size.x];
+                if (value !== Game.colorTypes.transparent) {
+                    targetRect.x = Math.min(targetRect.x, x);
+                    targetRect.y = Math.min(targetRect.y, y);
+                    targetRect.w = Math.min(targetRect.w, (me.size.x - 1) - x);
+                    targetRect.h = Math.min(targetRect.h, (me.size.y - 1) - y);
+                }
+            }
+        }
+
+        const offset = new Vector2(-targetRect.x, -targetRect.y);
+        const size = new Vector2(me.size.x - targetRect.x - targetRect.w, me.size.y - targetRect.y - targetRect.h);
+        me.resize(size, offset);
     }
 
     applySizeChange(size, direction) {
@@ -566,8 +589,7 @@ class PaintTool extends Tool {
         me.resize(size, padding)
     }
 
-    resize(size, offset)
-    {
+    resize(size, offset) {
         const oldSize = new Vector2(this.size.x, this.size.y);
         const oldData = Array.from(this.imageData);
         this.canvas.width = size.x * 20;
@@ -729,7 +751,7 @@ class PaintTool extends Tool {
 
         let selectedColor = me.brush.color;
         if (me.brush.tool === "erase")
-            selectedColor = 0;
+            selectedColor = Game.colorTypes.transparent;
 
         let previousColor = me.imageData[x + y * me.size.x];
         if (me.brush.tool === "fill" && previousColor !== selectedColor) {
@@ -775,7 +797,7 @@ class PaintTool extends Tool {
             let x = i % (me.size.x * 2);
             let y = Math.floor(i / (me.size.x * 2));
             let a = Math.abs((i % 2) - (y % 2)) == 0;
-            me.canvasContext.fillStyle = a ? "rgb(245,245,245)" : "rgb(200,200,200)";
+            me.canvasContext.fillStyle = a ? "rgb(205,245,205)" : "rgb(200,140,200)";
             me.canvasContext.fillRect(x * 10, y * 10, 10, 10);
         }
         let pixelIndex = 0;
