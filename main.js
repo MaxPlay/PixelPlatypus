@@ -458,7 +458,7 @@ class PaintToolResizeWindow {
         const x = Math.max(1, Math.min(40, Number(me.xInput.value)));
         const y = Math.max(1, Math.min(40, Number(me.yInput.value)));
         me.size = new Vector2(x, y);
-        paintTool.changeSize(me.size, me.direction);
+        paintTool.applySizeChange(me.size, me.direction);
     }
 };
 
@@ -477,7 +477,7 @@ class PaintTool extends Tool {
         }
         this.imageData = [];
         this.size = new Vector2(0, 0);
-        this.changeSize(new Vector2(20, 20), 0);
+        this.resize(new Vector2(20, 20), new Vector2(0, 0));
     }
 
     init() {
@@ -526,17 +526,11 @@ class PaintTool extends Tool {
         // TODO: Calculate rect and resize
     }
 
-    changeSize(size, direction) {
+    applySizeChange(size, direction) {
         let me = Game.tools.byId["paint-tool"];
-        let oldSize = me.size;
-        let oldData = Array.from(me.imageData);
+        const oldSize = me.size;
 
-        me.size = size;
-        let difference = new Vector2(me.size.x - oldSize.x, me.size.y - oldSize.y);
-
-        let x = size.x;
-        let y = size.y;
-
+        let difference = new Vector2(size.x - oldSize.x, size.y - oldSize.y);
         let padding = new Vector2(0, 0);
         switch (direction) {
             case 1:
@@ -569,22 +563,30 @@ class PaintTool extends Tool {
                 break;
         }
 
+        me.resize(size, padding)
+    }
 
-        me.canvas.width = x * 20;
-        me.canvas.height = y * 20;
+    resize(size, offset)
+    {
+        const oldSize = new Vector2(this.size.x, this.size.y);
+        const oldData = Array.from(this.imageData);
+        this.canvas.width = size.x * 20;
+        this.canvas.height = size.y * 20;
+        this.size.x = size.x;
+        this.size.y = size.y;
         this.resetImage();
 
         for (let oldY = 0; oldY < oldSize.y; oldY++) {
             for (let oldX = 0; oldX < oldSize.x; oldX++) {
-                let newCoordinate = new Vector2(oldX + padding.x, oldY + padding.y);
-                if (newCoordinate.x < me.size.x && newCoordinate.x >= 0 && newCoordinate.y < me.size.y && newCoordinate.y >= 0) {
+                let newCoordinate = new Vector2(oldX + offset.x, oldY + offset.y);
+                if (newCoordinate.x < this.size.x && newCoordinate.x >= 0 && newCoordinate.y < this.size.y && newCoordinate.y >= 0) {
                     let value = oldData[oldX + oldY * oldSize.x];
-                    me.imageData[newCoordinate.x + newCoordinate.y * me.size.x] = value;
+                    this.imageData[newCoordinate.x + newCoordinate.y * this.size.x] = value;
                 }
             }
         }
 
-        me.repaint();
+        this.repaint();
     }
 
     refreshData() {
