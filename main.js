@@ -101,7 +101,11 @@ Sprite = function (data, position) {
 }
 
 Game.character = {
-
+    name: "",
+    age: 0,
+    hunger: 0,
+    happiness: 0,
+    energy: 0
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -138,15 +142,47 @@ Game.onRightButtonClicked = function () {
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Gameplay
 
+Game.mechanics = {}
+Game.mechanics.lifestage = {
+    names: [
+        "egg",
+        "young",
+        "grown",
+        "old"
+    ],
+    ages: [
+        100,
+        10000,
+        60000
+    ]
+};
+Game.mechanics.lifestage.getLifestageFromAge = function (age) {
+    let me = Game.mechanics.lifestage;
+    let i = 0;
+    for (; i < me.ages.length; i++) {
+        const ageThreshold = me.ages[i];
+        if (ageThreshold >= age)
+            break;
+    }
+    return me.names[i];
+}
+
 Game.init = function () {
     Game.fps = 30;
     Game.ticks = 0;
 }
 
 Game.loop = function () {
+    var time = Date.now();
+    Game.data.deltaTime = (time - Game.data.time) / 1000;
+    Game.data.time = time;
     Game.processInput();
     // TODO process animations here: Game.animate();
     Game.ticks++;
+
+    Game.character.age += Game.data.deltaTime;
+
+    console.log(Game.mechanics.lifestage.getLifestageFromAge(Game.character.age));
 
     setTimeout(Game.loop, 1000 / Game.fps);
 }
@@ -866,6 +902,10 @@ Game.run = function (params) {
     AddEvent(Find("button-select"), "click", Game.onSelectButtonClicked);
     AddEvent(Find("button-right"), "click", Game.onRightButtonClicked);
 
+    Game.data = {
+        time: Date.now(),
+        deltaTime: 0
+    }
     Game.tools.init();
     Game.init();
     Game.loop();
