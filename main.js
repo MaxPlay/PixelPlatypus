@@ -33,6 +33,10 @@ function Find(id) {
     return document.getElementById(id);
 }
 
+function clamp(x, min, max) {
+    return Math.max(min, Math.min(max, x));
+}
+
 var Game = {}
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -54,9 +58,10 @@ Game.colorTypes = {
 }
 
 Game.sprites = {
-    test: [20, 20, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
-    test2: [20, 20, 0, 5, 1, 10, 0, 8, 1, 2, 2, 10, 1, 2, 0, 5, 1, 1, 2, 14, 1, 1, 0, 3, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 1, 1, 1, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 3, 1, 1, 2, 10, 1, 1, 2, 3, 1, 2, 2, 4, 1, 1, 2, 8, 1, 1, 2, 4, 1, 2, 2, 5, 1, 8, 2, 5, 1, 1, 0, 1, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 3, 1, 1, 2, 14, 1, 1, 0, 5, 1, 2, 2, 10, 1, 2, 0, 8, 1, 10, 0, 5],
-    idle: [20, 14, 0, 6, 1, 2, 2, 4, 1, 2, 0, 11, 1, 1, 2, 2, 1, 3, 2, 1, 1, 1, 2, 1, 1, 1, 0, 10, 1, 2, 2, 1, 1, 3, 2, 1, 1, 3, 0, 11, 2, 2, 1, 4, 2, 3, 0, 9, 2, 6, 1, 4, 2, 2, 0, 5, 2, 4, 1, 5, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 9, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 8, 2, 3, 1, 1, 2, 2, 0, 6, 2, 8, 1, 3, 2, 1, 1, 1, 2, 1, 0, 9, 2, 2, 1, 8, 2, 3, 0, 6, 2, 2, 1, 1, 2, 1, 1, 8, 2, 1, 1, 1, 2, 1, 0, 4, 2, 2, 1, 1, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 1],
+    test: [20, 20, 0, 0, 0, 5, 2, 10, 0, 8, 2, 2, 1, 10, 2, 2, 0, 5, 2, 1, 1, 14, 2, 1, 0, 3, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 1, 2, 1, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 5, 2, 1, 1, 6, 2, 1, 1, 5, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 18, 2, 2, 1, 3, 2, 1, 1, 10, 2, 1, 1, 3, 2, 2, 1, 4, 2, 1, 1, 8, 2, 1, 1, 4, 2, 2, 1, 5, 2, 8, 1, 5, 2, 1, 0, 1, 2, 1, 1, 16, 2, 1, 0, 2, 2, 1, 1, 16, 2, 1, 0, 3, 2, 1, 1, 14, 2, 1, 0, 5, 2, 2, 1, 10, 2, 2, 0, 8, 2, 10, 0, 5],
+    test2: [20, 20, 0, 0, 0, 5, 1, 10, 0, 8, 1, 2, 2, 10, 1, 2, 0, 5, 1, 1, 2, 14, 1, 1, 0, 3, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 1, 1, 1, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 5, 1, 1, 2, 6, 1, 1, 2, 5, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 18, 1, 2, 2, 3, 1, 1, 2, 10, 1, 1, 2, 3, 1, 2, 2, 4, 1, 1, 2, 8, 1, 1, 2, 4, 1, 2, 2, 5, 1, 8, 2, 5, 1, 1, 0, 1, 1, 1, 2, 16, 1, 1, 0, 2, 1, 1, 2, 16, 1, 1, 0, 3, 1, 1, 2, 14, 1, 1, 0, 5, 1, 2, 2, 10, 1, 2, 0, 8, 1, 10, 0, 5],
+    idle: [20, 14, 0, 0, 0, 6, 1, 2, 2, 4, 1, 2, 0, 11, 1, 1, 2, 2, 1, 3, 2, 1, 1, 1, 2, 1, 1, 1, 0, 10, 1, 2, 2, 1, 1, 3, 2, 1, 1, 3, 0, 11, 2, 2, 1, 4, 2, 3, 0, 9, 2, 6, 1, 4, 2, 2, 0, 5, 2, 4, 1, 5, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 9, 2, 1, 1, 4, 2, 1, 0, 4, 2, 1, 1, 8, 2, 3, 1, 1, 2, 2, 0, 6, 2, 8, 1, 3, 2, 1, 1, 1, 2, 1, 0, 9, 2, 2, 1, 8, 2, 3, 0, 6, 2, 2, 1, 1, 2, 1, 1, 8, 2, 1, 1, 1, 2, 1, 0, 4, 2, 2, 1, 1, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 3, 2, 1, 1, 2, 2, 1, 1, 9, 2, 1, 1, 2, 2, 1, 0, 1],
+    egg0: [8, 9, 4, 9, 0, 3, 2, 2, 0, 5, 2, 1, 1, 2, 2, 1, 0, 3, 2, 3, 1, 2, 2, 1, 0, 2, 2, 2, 1, 3, 2, 1, 0, 1, 2, 1, 1, 6, 2, 2, 1, 5, 2, 5, 1, 2, 2, 3, 0, 1, 2, 2, 1, 3, 2, 1, 0, 3, 2, 4, 0, 2],
 };
 
 Game.animations = {
@@ -78,6 +83,10 @@ class Vector2 {
     }
     add(other) { return new Vector2(this.x + other.x, this.y + other.y); }
     subtract(other) { return new Vector2(this.x - other.x, this.y - other.y); }
+    multiply(other) { return new Vector2(this.x * other, this.y * other); }
+    multiplyV(other) { return new Vector2(this.x * other.x, this.y * other.y); }
+    divide(other) { return new Vector2(this.x * other, this.y * other); }
+    divideV(other) { return new Vector2(this.x * other.x, this.y * other.y); }
     area() { return this.x * this.y; }
     invert() { return new Vector2(-this.x, -this.y); }
 }
@@ -96,7 +105,7 @@ class Rect {
 }
 
 Sprite = function (data, position) {
-    this.location = new Rect(position.x, position.y, data[0], data[1]);
+    this.location = new Rect(position.x - data[2], position.y - data[3], data[0], data[1]);
     this.data = data;
 }
 
@@ -184,6 +193,8 @@ Game.loop = function () {
 
     console.log(Game.mechanics.lifestage.getLifestageFromAge(Game.character.age));
 
+    Game.spriteBatch.add("egg0", new Vector2(0, 10));
+
     setTimeout(Game.loop, 1000 / Game.fps);
 }
 
@@ -207,6 +218,7 @@ Game.spriteBatch.clear = function () {
 }
 
 Game.clearFrame = function () {
+    Game.canvasContext.clearRect(0, 0, Game.canvas.width, Game.canvas.height);
     Game.canvasContext.fillStyle = Game.colors.white;
     Game.canvasContext.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
 }
@@ -221,10 +233,10 @@ Game.draw = function () {
     Game.clearFrame();
 
     Game.spriteBatch.data.forEach(element => {
-        if (element.data.length > 2) {
+        if (element.data.length > 4) {
             let spriteSize = element.location;
             let pixelIndex = 0;
-            for (let i = 2; i < element.data.length; i += 2) {
+            for (let i = 4; i < element.data.length; i += 2) {
                 let color = element.data[i];
                 let amount = element.data[i + 1];
                 if (color > 0) {
@@ -253,7 +265,6 @@ Game.draw = function () {
 Game.debugMode = false;
 
 class Tool {
-
     constructor(name, identifier) {
         this.name = name;
         this.identifier = identifier;
@@ -443,23 +454,26 @@ class DebugConsole extends Tool {
 class PaintToolResizeWindow {
     constructor(basetool) {
         this.basetool = basetool;
-        this.window = Find(basetool + "-resize");
-        this.xInput = Find(basetool + "-resize-x");
-        this.yInput = Find(basetool + "-resize-y");
+        this.toolname = basetool + "-resize";
+        this.window = Find(this.toolname);
+        this.xInput = Find(this.toolname + "-x");
+        this.yInput = Find(this.toolname + "-y");
         {
             let resizeButtons = [];
             let me = this;
             let index = 0;
             ["up-left", "up", "up-right", "center-left", "center", "center-right", "down-left", "down", "down-right"].forEach(element => {
-                let button = Find("paint-tool-resize-" + element);
+                let button = Find(me.toolname + "-" + element);
                 AddEvent(button, "click", () => me.setDirection(button));
                 resizeButtons.push(button);
                 ++index;
             });
             this.buttons = resizeButtons;
         }
-        this.applyButton = Find("paint-tool-resize-apply");
+        this.applyButton = Find(this.toolname + "-apply");
         AddEvent(this.applyButton, "click", this.apply);
+        this.cancelButton = Find(this.toolname + "-cancel");
+        AddEvent(this.cancelButton, "click", this.cancel);
         this.size = new Vector2(1, 1);
         this.oldSize = this.size;
         this.direction = 4;
@@ -505,7 +519,56 @@ class PaintToolResizeWindow {
         me.size = new Vector2(x, y);
         paintTool.applySizeChange(me.size, me.direction);
     }
-};
+
+    cancel() {
+        let paintTool = Game.tools.byId["paint-tool"];
+        let me = paintTool.resizeWindow;
+        me.window.style.visibility = "collapse";
+    }
+}
+
+class PaintToolPivotWindow {
+    constructor(basetool) {
+        this.basetool = basetool;
+        this.toolname = basetool + "-pivot";
+        this.window = Find(this.toolname);
+        this.xInput = Find(this.toolname + "-x");
+        this.yInput = Find(this.toolname + "-y");
+        this.limits = new Vector2(0, 0);
+        this.pivot = new Vector2(0, 0);
+        this.applyButton = Find(this.toolname + "-apply");
+        AddEvent(this.applyButton, "click", this.apply);
+        this.cancelButton = Find(this.toolname + "-cancel");
+        AddEvent(this.cancelButton, "click", this.cancel);
+    }
+
+    show(pivot, limits) {
+        this.window.style.visibility = "inherit";
+        this.limits = new Vector2(Math.round(limits.x), Math.round(limits.y));
+        const x = clamp(Math.round(pivot.x), 1, this.limits.x);
+        const y = clamp(Math.round(pivot.y), 1, this.limits.y);
+        this.xInput.value = x;
+        this.xInput.setAttribute("max", this.limits.x);
+        this.yInput.value = y;
+        this.yInput.setAttribute("max", this.limits.y);
+    }
+
+    apply() {
+        let paintTool = Game.tools.byId["paint-tool"];
+        let me = paintTool.pivotWindow;
+        me.window.style.visibility = "collapse";
+
+        const x = clamp(Number(me.xInput.value), 1, me.limits.x);
+        const y = clamp(Number(me.yInput.value), 1, me.limits.y);
+        paintTool.setPivot(new Vector2(x, y));
+    }
+
+    cancel() {
+        let paintTool = Game.tools.byId["paint-tool"];
+        let me = paintTool.pivotWindow;
+        me.window.style.visibility = "collapse";
+    }
+}
 
 class PaintTool extends Tool {
     constructor() {
@@ -513,6 +576,7 @@ class PaintTool extends Tool {
         this.canvas = Find("paint-tool");
         this.canvasContext = this.canvas.getContext("2d", { alpha: false });
         this.resizeWindow = new PaintToolResizeWindow(this.identifier);
+        this.pivotWindow = new PaintToolPivotWindow(this.identifier);
         this.toolbar = Find("paint-tool-toolbar");
         this.dataDisplay = Find("paint-tool-data");
         this.brush = {
@@ -522,6 +586,7 @@ class PaintTool extends Tool {
         }
         this.imageData = [];
         this.size = new Vector2(0, 0);
+        this.pivot = new Vector2(10, 10);
         this.resize(new Vector2(20, 20), new Vector2(0, 0));
     }
 
@@ -548,6 +613,7 @@ class PaintTool extends Tool {
         this.addSeparator(this.toolbar);
         this.addButton(this.toolbar, "resize", '<svg width="20" height="20"><rect stroke-width="0" height="17.625" width="18" y="1.1875" x="1" stroke="#000" fill="#000000"/><rect transform="rotate(45, 10, 10)" height="18" width="18" y="1" x="1" stroke-width="0" stroke="#000" fill="#ffffff"/><rect transform="rotate(45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/><rect transform="rotate(-45, 10, 10)" height="2" width="20" y="9" x="0" stroke-width="0" stroke="#000" fill="#000000"/></svg>', this.showResize);
         this.addButton(this.toolbar, "resize-to-fit", '<svg width="20" height="20"><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="18" x2="6" y1="2" x1="6" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="18" x2="14" y1="2" x1="14" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="6" x2="18" y1="6" x1="2" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="14" x2="18" y1="14" x1="2" stroke="#000" fill="none"/></svg>', this.resizeToFit);
+        this.addButton(this.toolbar, "pivot", '<svg width="20" height="20"><line stroke-width="2" stroke-linecap="undefined" stroke-linejoin="undefined" y2="10" x2="17" y1="10" x1="3" stroke="#000" fill="none"/><line stroke-linecap="undefined" stroke-linejoin="undefined" y2="17" x2="10" y1="3" x1="10" stroke-width="2" stroke="#000" fill="none"/></svg>', this.showPivot);
 
         AddEvent(this.canvas, "mousedown", this.canvasMouseDown);
         AddEvent(this.canvas, "mousemove", this.canvasMouseMove);
@@ -563,6 +629,19 @@ class PaintTool extends Tool {
     showResize() {
         let me = Game.tools.byId["paint-tool"];
         me.resizeWindow.show(me.size);
+    }
+
+    showPivot() {
+        let me = Game.tools.byId["paint-tool"];
+        me.pivotWindow.show(me.pivot, me.size);
+    }
+
+    setPivot(pivot) {
+        let me = Game.tools.byId["paint-tool"];
+        me.pivot.x = pivot.x;
+        me.pivot.y = pivot.y;
+
+        me.repaint();
     }
 
     resizeToFit() {
@@ -581,7 +660,7 @@ class PaintTool extends Tool {
         }
 
         const offset = new Vector2(-targetRect.x, -targetRect.y);
-        const size = new Vector2(me.size.x - targetRect.x - targetRect.w, me.size.y - targetRect.y - targetRect.h);
+        const size = new Vector2(clamp(me.size.x - targetRect.x - targetRect.w, 1, 40), clamp(me.size.y - targetRect.y - targetRect.h, 1, 40));
         me.resize(size, offset);
     }
 
@@ -644,6 +723,9 @@ class PaintTool extends Tool {
             }
         }
 
+        this.pivot.x = clamp(this.pivot.x, 0, this.size.x);
+        this.pivot.y = clamp(this.pivot.y, 0, this.size.y);
+
         this.repaint();
     }
 
@@ -652,6 +734,8 @@ class PaintTool extends Tool {
         let output = [];
         output.push(me.size.x);
         output.push(me.size.y);
+        output.push(me.pivot.x);
+        output.push(me.pivot.y);
         let lastColor = -1;
         let count = 0;
         me.imageData.forEach(data => {
@@ -715,7 +799,7 @@ class PaintTool extends Tool {
     }
 
     loadData(data) {
-        if (data.length < 4) {
+        if (data.length < 6) {
             console.error('Not enough data to load.');
             return;
         }
@@ -732,6 +816,9 @@ class PaintTool extends Tool {
 
         this.size.x = data[0];
         this.size.y = data[1];
+
+        this.pivot.x = data[2];
+        this.pivot.y = data[3];
 
         this.canvas.width = this.size.x * 20;
         this.canvas.height = this.size.y * 20;
@@ -828,13 +915,17 @@ class PaintTool extends Tool {
 
     repaint() {
         let me = Game.tools.byId["paint-tool"];
+        let context = me.canvasContext;
+        const tilesize = 20;
+
+        context.clearRect(0, 0, Game.canvas.width, Game.canvas.height);
 
         for (let i = 0; i < me.size.x * 2 * me.size.y * 2; i++) {
             let x = i % (me.size.x * 2);
             let y = Math.floor(i / (me.size.x * 2));
             let a = Math.abs((i % 2) - (y % 2)) == 0;
-            me.canvasContext.fillStyle = a ? "rgb(205,245,205)" : "rgb(200,140,200)";
-            me.canvasContext.fillRect(x * 10, y * 10, 10, 10);
+            context.fillStyle = a ? "rgb(205,245,205)" : "rgb(200,140,200)";
+            context.fillRect(x * 10, y * 10, 10, 10);
         }
         let pixelIndex = 0;
         me.imageData.forEach(pixel => {
@@ -842,9 +933,19 @@ class PaintTool extends Tool {
             let y = Math.floor(pixelIndex / me.size.x);
             pixelIndex++;
 
-            me.canvasContext.fillStyle = Game.colors.getColor(pixel);
-            me.canvasContext.fillRect(x * 20, y * 20, 20, 20);
+            context.fillStyle = Game.colors.getColor(pixel);
+            context.fillRect(x * tilesize, y * tilesize, tilesize, tilesize);
         });
+
+        const pivot = me.pivot.multiply(tilesize);
+        context.strokeStyle = "rgb(255, 0, 0)";
+        context.beginPath();
+        context.moveTo(pivot.x - 10, pivot.y);
+        context.lineTo(pivot.x + 10, pivot.y);
+        context.moveTo(pivot.x, pivot.y - 10);
+        context.lineTo(pivot.x, pivot.y + 10);
+        context.lineWidth = 2.0;
+        context.stroke();
 
         me.refreshData();
     }

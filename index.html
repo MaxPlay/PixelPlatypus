@@ -26,7 +26,8 @@
                 <line x1="90" x2="10" y1="10" y2="90" stroke="#000" stroke-width="10" stroke-linecap="round" />
             </svg></button>
         <div style="margin: 5px 0px">
-            <input id="paint-tool-data" type="text" readonly /><button id="paint-tool-copy-data" type="button">Copy</button><button id="paint-tool-paste-data" type="button">Paste</button>
+            <input id="paint-tool-data" type="text" readonly /><button id="paint-tool-copy-data"
+                type="button">Copy</button><button id="paint-tool-paste-data" type="button">Paste</button>
         </div>
         <div>
             <canvas id="paint-tool" width="0" height="0">Paint Platypus!</canvas>
@@ -56,7 +57,25 @@
                 <button type="button" id="paint-tool-resize-down"></button>
                 <button type="button" id="paint-tool-resize-down-right"></button>
             </div>
+            <button type="button" id="paint-tool-resize-cancel" style="float: inline-end;">Cancel</button>
             <button type="button" id="paint-tool-resize-apply" style="float: inline-end;">Apply</button>
+        </form>
+        <form id="paint-tool-pivot" style="visibility: collapse;">
+            <header>Pivot</header>
+            <label>
+                X
+                <input type="number" step="1" min="1" max="40" id="paint-tool-pivot-x"
+                    style="margin: 5px 0px; width: 100px;" />
+            </label><br>
+            <label>
+                Y
+                <input type="number" step="1" min="1" max="40" id="paint-tool-pivot-y"
+                    style="margin: 5px 0px; width: 100px;" />
+            </label>
+            
+            <button type="button" id="paint-tool-pivot-cancel" style="float: inline-end;">Cancel</button>
+            <button type="button" id="paint-tool-pivot-apply" style="float: inline-end;">Apply</button>
+        </form>
     </div>
     </div>
     <script src="main.js?version=1"></script>
