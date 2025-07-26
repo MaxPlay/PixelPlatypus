@@ -179,12 +179,17 @@ Game.mechanics.lifestage.getLifestageFromAge = function (age) {
 Game.init = function () {
     Game.fps = 30;
     Game.ticks = 0;
+    Game.load();
 }
 
 Game.loop = function () {
     var time = Date.now();
     Game.data.deltaTime = (time - Game.data.time) / 1000;
     Game.data.time = time;
+    if (Game.nextSave < time) {
+        Game.save();
+    }
+
     Game.processInput();
     // TODO process animations here: Game.animate();
     Game.ticks++;
@@ -193,9 +198,28 @@ Game.loop = function () {
 
     console.log(Game.mechanics.lifestage.getLifestageFromAge(Game.character.age));
 
-    Game.spriteBatch.add("egg0", new Vector2(0, 10));
+    Game.spriteBatch.add("egg0", new Vector2(15, 13));
 
     setTimeout(Game.loop, 1000 / Game.fps);
+}
+
+Game.nextSave = 0;
+Game.save = function () {
+    let save = {
+        age: Game.character.age
+    };
+    localStorage.setItem("gamestate", JSON.stringify(save));
+    Game.nextSave = Game.data.time + 30000;
+    // TODO display save notification
+}
+
+Game.load = function () {
+    let saveState = localStorage.getItem("gamestate");
+    if (saveState !== null) {
+        let save = JSON.parse(saveState);
+        Game.character.age = save.age;
+    }
+    Game.nextSave = Game.data.time + 30000;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -430,6 +454,17 @@ class DebugConsole extends Tool {
                 debugConsole.lastContainer.appendChild(heading);
             }
 
+            debugConsole.addHeading("Lifetime");
+            debugConsole.addButton("add 10 seconds to age", function (e) { Game.character.age += 10; });
+            debugConsole.addButton("add 100 seconds to age", function (e) { Game.character.age += 100; });
+            debugConsole.addButton("add 1000 seconds to age", function (e) { Game.character.age += 1000; });
+            debugConsole.addButton("remove 10 seconds from age", function (e) { Game.character.age -= 10; });
+            debugConsole.addButton("remove 100 seconds from age", function (e) { Game.character.age -= 100; });
+            debugConsole.addButton("remove 1000 seconds from age", function (e) { Game.character.age -= 1000; });
+            debugConsole.addHeading("Storage");
+            debugConsole.addButton("save", function (e) { Game.save(); });
+            debugConsole.addButton("load", function (e) { Game.load(); });
+            debugConsole.addButton("clear", function (e) { localStorage.clear(); });
             // TODO: Fill debug console here
 
             Game.debugMode = true;
@@ -584,10 +619,7 @@ class PaintTool extends Tool {
             color: 1,
             size: 1
         }
-        this.imageData = [];
-        this.size = new Vector2(0, 0);
-        this.pivot = new Vector2(10, 10);
-        this.resize(new Vector2(20, 20), new Vector2(0, 0));
+        this.resetData();
     }
 
     init() {
@@ -621,6 +653,7 @@ class PaintTool extends Tool {
 
         AddEvent(Find("paint-tool-copy-data"), "click", this.copyData);
         AddEvent(Find("paint-tool-paste-data"), "click", this.pasteData);
+        AddEvent(Find("paint-tool-reset-data"), "click", this.resetData);
 
         this.refreshMode();
         this.repaint();
@@ -836,6 +869,14 @@ class PaintTool extends Tool {
         }
 
         this.repaint();
+    }
+
+    resetData() {
+        let me = Game.tools.byId["paint-tool"];
+        me.imageData = [];
+        me.size = new Vector2(0, 0);
+        me.pivot = new Vector2(10, 10);
+        me.resize(new Vector2(20, 20), new Vector2(0, 0));
     }
 
     resetImage() {
